@@ -1,0 +1,20 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Properties" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Properties" %}</h1>
+{% translate "Name, city or vendor" as ph %}{% include "adminpanel/_filters.html" with placeholder=ph %}
+<div class="box p-0">
+  <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>{% translate "Property" %}</th><th>{% translate "Vendor" %}</th><th>{% translate "Inventory" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+    <tbody>{% for p in page.object_list %}<tr>
+      <td><a class="fw-semibold" href="{% url 'adminpanel:property_detail' p.pk %}">{{ p.name }}</a>{% if p.is_featured %} <i class="bi bi-star-fill text-gold" title="{% translate 'Featured' %}"></i>{% endif %}<div class="small text-muted">{{ p.get_category_display }} · {{ p.city }}</div></td>
+      <td class="small">{{ p.vendor.business_name }} {{ p.vendor.status|status_badge:p.vendor.get_status_display }}</td>
+      <td class="small">{{ p.n_rooms }} {% translate "room types" %} · {{ p.n_venues }} {% translate "spaces" %}</td>
+      <td>{{ p.status|status_badge:p.get_status_display }}</td>
+      <td class="text-end"><a class="btn btn-sm btn-light" href="{% url 'adminpanel:property_detail' p.pk %}">{% translate "Review" %}</a></td>
+    </tr>{% empty %}<tr><td colspan="5">{% translate "No properties match." as t %}{% include "partials/empty.html" with icon="buildings" text=t %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

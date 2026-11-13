@@ -1,0 +1,23 @@
+{% load heza i18n %}
+<article class="listing-card">
+  <div class="thumb">
+    {% with c=p.cover %}
+      {% if c %}<img src="{{ c.image.url }}" alt="{{ p.name }}" loading="lazy">{% else %}<div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>{% endif %}
+    {% endwith %}
+    <span class="pill"><i class="bi bi-{{ p.category_icon }}"></i> {{ p.get_category_display }}</span>
+    <form method="post" action="{% url 'public:favorite_toggle' p.pk %}" class="fav-btn-wrap" data-toggle="favorite" data-no-spinner>{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button type="submit" class="fav-btn listing-fav {% if p.pk in fav_ids %}is-active{% endif %}" aria-pressed="{% if p.pk in fav_ids %}true{% else %}false{% endif %}" aria-label="{% translate 'Save to favourites' %}" style="position:absolute;right:.6rem;top:.6rem;z-index:3">
+        <i class="bi {% if p.pk in fav_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+      </button>
+    </form>
+  </div>
+  <div class="pt-2">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <a class="title stretched-link" href="{{ p.get_absolute_url }}{% if query_dates %}?{{ query_dates }}{% endif %}">{{ p.name }}</a>
+      {% if p.review_count %}<span class="rating-chip"><i class="bi bi-star-fill"></i>{{ p.rating_avg|floatformat:1 }}<span class="text-muted fw-normal">({{ p.review_count }})</span></span>{% else %}<span class="small text-muted">{% translate "New" %}</span>{% endif %}
+    </div>
+    <div class="small text-muted">{{ p.district|default:p.city }}{% if p.district %}, {{ p.city }}{% endif %}{% if p.star_rating %} · {{ p.star_rating }}★{% endif %}</div>
+    {% if p.starting_price %}<div class="price mt-1">{{ p.starting_price|money }} <small>{% if p.is_venue_category %}{% translate "from" %}{% else %}{% translate "/ night" %}{% endif %}</small></div>{% endif %}
+  </div>
+</article>

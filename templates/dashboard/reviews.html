@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Reviews" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-1">{% translate "Reviews" %}</h1>
+<p class="text-muted small mb-3">{% translate "Only guests with completed bookings can review. Heza moderates reviews before they're published; you can reply publicly once approved." %}</p>
+<div class="d-grid gap-3">
+  {% for r in page.object_list %}
+  <div class="box">
+    <div class="d-flex flex-wrap justify-content-between gap-2">
+      <div><span class="text-gold">{{ r.rating|stars }}</span> <strong>{{ r.title }}</strong><div class="small text-muted">{{ r.author.display_name }} · {{ r.property.name }} · {{ r.created_at|date:"d M Y" }}</div></div>
+      {{ r.status|status_badge:r.get_status_display }}
+    </div>
+    <p class="mt-2 mb-2">{{ r.body|linebreaksbr }}</p>
+    {% if r.vendor_reply %}
+      <div class="box-sand p-3 rounded-3 small"><strong>{% translate "Your reply" %}</strong> · {{ r.vendor_replied_at|date:"d M Y" }}<div>{{ r.vendor_reply|linebreaksbr }}</div></div>
+    {% elif r.status == 'approved' %}
+      <form method="post" action="{% url 'dashboard:review_reply' r.pk %}" class="mt-2">{% csrf_token %}
+        <label class="form-label small" for="reply-{{ r.pk }}">{% translate "Public reply" %}</label>
+        <textarea class="form-control" id="reply-{{ r.pk }}" name="reply" rows="2" maxlength="2000" required></textarea>
+        <button class="btn btn-sm btn-primary mt-2" type="submit">{% translate "Publish reply" %}</button>
+      </form>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="box">{% translate "No reviews yet. Guests are invited to review after their stay or event is completed." as t %}{% include "partials/empty.html" with icon="star" text=t %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

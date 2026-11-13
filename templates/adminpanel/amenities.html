@@ -1,0 +1,16 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n %}
+{% block page_title %}{% translate "Amenities" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Amenities" %}</h1>
+<div class="row g-4">
+  <div class="col-xl-7"><div class="box p-0"><div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>{% translate "Amenity" %}</th><th>{% translate "Scope" %}</th><th>{% translate "Used by" %}</th><th></th></tr></thead>
+    <tbody>{% for a in amenities %}<tr><td><i class="bi bi-{{ a.icon }} me-1"></i>{{ a.name }}</td><td>{{ a.get_scope_display }}</td><td>{{ a.n }}</td>
+      <td class="text-end"><form method="post" action="{% url 'adminpanel:amenity_delete' a.pk %}" data-confirm="{% translate 'Delete this amenity from all listings?' %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger">{% translate "Delete" %}</button></form></td></tr>{% endfor %}</tbody>
+  </table></div></div></div>
+  <div class="col-xl-5"><div class="box"><h2 class="h6">{% translate "Add amenity" %}</h2>
+    <p class="small text-muted">{% translate "Icon names come from Bootstrap Icons, e.g. wifi, cup-hot, p-circle." %}</p>
+    <form method="post" novalidate>{% csrf_token %}{% include "partials/form_fields.html" with cols="col-12" %}<button class="btn btn-primary mt-3" type="submit">{% translate "Add" %}</button></form></div></div>
+</div>
+{% endblock %}

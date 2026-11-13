@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static i18n heza %}
+{% block title %}{% translate "Book" %} {{ venue.name }} · {{ p.name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <a class="small" href="{{ p.get_absolute_url }}#venues"><i class="bi bi-arrow-left"></i> {{ p.name }}</a>
+  <h1 class="h3 mt-2 mb-1">{% blocktranslate with v=venue.name %}Book {{ v }}{% endblocktranslate %}</h1>
+  <p class="text-muted mb-4">{{ venue.get_setting_display }} · {% blocktranslate with s=venue.capacity_seated st=venue.capacity_standing %}{{ s }} seated / {{ st }} standing{% endblocktranslate %} · {% translate "open" %} {{ venue.opening_time|time:"H:i" }}–{{ venue.closing_time|time:"H:i" }}</p>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <form method="post" novalidate id="venueForm" data-venue-quote="{% url 'api:venue_quote' venue.pk %}" data-venue-slots="{% url 'api:venue_slots' venue.pk %}">{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>{% endif %}
+        <div class="box mb-3">
+          <h2 class="h6 mb-3">{% translate "Date & time" %}</h2>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label" for="{{ form.day.id_for_label }}">{{ form.day.label }}</label>{{ form.day }}{% for e in form.day.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+            <div class="col-md-6"><label class="form-label" for="{{ form.mode.id_for_label }}">{{ form.mode.label }}</label>{{ form.mode }}</div>
+            <div class="col-12"><div class="slot-grid" data-slots></div><div class="small text-muted mt-2" data-busy></div></div>
+            <div class="col-6 d-none" data-hourly><label class="form-label" for="{{ form.start_time.id_for_label }}">{{ form.start_time.label }}</label>{{ form.start_time }}{% for e in form.start_time.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+            <div class="col-6 d-none" data-hourly><label class="form-label" for="{{ form.hours.id_for_label }}">{{ form.hours.label }} (min {{ venue.min_hours }})</label>{{ form.hours }}{% for e in form.hours.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+          </div>
+        </div>
+        <div class="box mb-3">
+          <h2 class="h6 mb-3">{% translate "Event" %}</h2>
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label" for="{{ form.guests.id_for_label }}">{% translate "Guests" %}</label>{{ form.guests }}{% for e in form.guests.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+            <div class="col-md-8"><label class="form-label" for="{{ form.event_type.id_for_label }}">{{ form.event_type.label }}</label>{{ form.event_type }}</div>
+            <div class="col-12"><label class="form-label" for="{{ form.package.id_for_label }}">{{ form.package.label }}</label>{{ form.package }}</div>
+            {% with extras=form.extra_bound_fields %}{% if extras %}
+            <div class="col-12"><div class="form-label">{% translate "Extras" %}</div>
+              <div class="row g-2">
+                {% for f in extras %}
+                  <div class="col-md-6">
+                    {% if f.widget_type == 'checkbox' %}
+                      <div class="form-check border rounded-3 p-2 ps-5">{{ f }}<label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label><div class="small text-muted">{{ f.help_text }}</div></div>
+                    {% else %}
+                      <div class="border rounded-3 p-2"><label class="form-label small mb-1" for="{{ f.id_for_label }}">{{ f.label }} <span class="text-muted">· {{ f.help_text }}</span></label>{{ f }}</div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}{% endwith %}
+          </div>
+        </div>
+        <div class="box mb-3">
+          <h2 class="h6 mb-3">{% translate "Organiser details" %}</h2>
+          <div class="row g-3">
+            {% for f in form %}{% if f.name in "guest_name guest_email guest_phone special_requests coupon_code" %}
+              <div class="{% if f.name == 'special_requests' %}col-12{% else %}col-md-6{% endif %}"><label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+            {% endif %}{% endfor %}
+            {% if form.pay_later %}<div class="col-12"><div class="form-check">{{ form.pay_later }}<label class="form-check-label" for="{{ form.pay_later.id_for_label }}">{{ form.pay_later.label }}</label></div></div>{% endif %}
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg w-100" type="submit">{% translate "Continue to payment" %}</button>
+      </form>
+    </div>
+    <div class="col-lg-5">{% include "bookings/_quote_panel.html" with title=venue.name %}</div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/booking.js' %}"></script>{% endblock %}

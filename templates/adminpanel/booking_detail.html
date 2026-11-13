@@ -1,0 +1,40 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{{ b.reference }}{% endblock %}
+{% block dash %}
+<a class="small" href="{% url 'adminpanel:bookings' %}"><i class="bi bi-arrow-left"></i> {% translate "Bookings" %}</a>
+<h1 class="h4 mt-2 mb-1">{{ b.reference }} {{ b.status|status_badge:b.get_status_display }} {{ b.payment_status|status_badge:b.get_payment_status_display }}</h1>
+<p class="text-muted">{{ b.property.name }} · {{ b.listing_name }} · <a href="{% url 'adminpanel:vendor_detail' b.vendor.pk %}">{{ b.vendor.business_name }}</a> · {% translate "guest" %} {{ b.guest_name }} ({{ b.customer.email }})</p>
+<div class="row g-4">
+  <div class="col-xl-7 d-grid gap-4 align-content-start">
+    <div class="box">
+      <h2 class="h6">{% translate "Payments" %}</h2>
+      <div class="table-responsive"><table class="table table-sm small align-middle">
+        <thead><tr><th>{% translate "Reference" %}</th><th>{% translate "Provider" %}</th><th>{% translate "Provider txn" %}</th><th>{% translate "Status" %}</th><th class="money">{% translate "Amount" %}</th></tr></thead>
+        <tbody>{% for p in payments %}<tr><td>{{ p.reference }}</td><td>{{ p.provider }} {{ p.payment_method }}</td><td><code>{{ p.provider_transaction_id|default:"—" }}</code></td><td>{{ p.status|status_badge:p.get_status_display }}{% if p.verified_at %}<div class="text-muted">{% translate "verified" %} {{ p.verified_at|date:"d M H:i" }}</div>{% endif %}</td><td class="money">{{ p.amount|money:p.currency }}</td></tr>{% empty %}<tr><td colspan="5" class="text-muted">—</td></tr>{% endfor %}</tbody>
+      </table></div>
+      {% for r in refunds %}<div class="small"><i class="bi bi-arrow-return-left"></i> {{ r.amount|money }} · {{ r.status|status_badge:r.get_status_display }} · {{ r.reason }}</div>{% endfor %}
+    </div>
+    <div class="box">
+      <h2 class="h6">{% translate "Ledger entries" %}</h2>
+      <div class="table-responsive"><table class="table table-sm small">
+        <thead><tr><th>{% translate "Wallet" %}</th><th>{% translate "Type" %}</th><th>{% translate "Description" %}</th><th class="money">{% translate "Amount" %}</th></tr></thead>
+        <tbody>{% for e in ledger %}<tr><td>{{ e.wallet.vendor.business_name|default:"Heza platform" }}</td><td>{{ e.get_entry_type_display }}</td><td>{{ e.description }}</td><td class="money {% if e.amount < 0 %}text-danger{% endif %}">{{ e.amount|money:"" }}</td></tr>{% empty %}<tr><td colspan="4" class="text-muted">—</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    <div class="box"><h2 class="h6">{% translate "History" %}</h2><ul class="timeline small">{% for e in events %}<li><div>{{ e.message }}</div><div class="text-muted">{{ e.created_at|date:"d M Y H:i" }}{% if e.actor %} · {{ e.actor.email }}{% endif %}</div></li>{% endfor %}</ul></div>
+  </div>
+  <div class="col-xl-5 d-grid gap-4 align-content-start">
+    <div class="box"><h2 class="h6">{% translate "Price" %}</h2>{% include "bookings/_breakdown.html" %}<div class="quote-line small text-muted mt-2"><span>{% translate "Commission" %} ({{ b.commission_rate|floatformat:1 }}%)</span><span>{{ b.commission_amount|money }}</span></div></div>
+    {% if b.status == 'pending' or b.status == 'confirmed' %}
+    <div class="box">
+      <h2 class="h6 text-danger">{% translate "Support cancellation" %}</h2>
+      <p class="small text-muted">{% translate "Cancels with a full refund of online payments queued for processing." %}</p>
+      <form method="post" data-confirm="{% translate 'Cancel this booking with a full refund?' %}">{% csrf_token %}<input type="hidden" name="action" value="cancel">
+        <input class="form-control mb-2" name="note" maxlength="255" placeholder="{% translate 'Reason shown to guest and vendor' %}" required>
+        <button class="btn btn-outline-danger" type="submit">{% translate "Cancel booking" %}</button></form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

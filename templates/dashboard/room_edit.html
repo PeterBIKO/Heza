@@ -1,0 +1,55 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{{ room.name }}{% endblock %}
+{% block dash %}
+<a class="small" href="{% url 'dashboard:property_edit' p.pk %}#rooms"><i class="bi bi-arrow-left"></i> {{ p.name }}</a>
+<div class="d-flex flex-wrap justify-content-between gap-2 mt-2 mb-4">
+  <h1 class="h4 mb-0">{{ room.name }}</h1>
+  <a class="btn btn-light" href="{% url 'dashboard:calendar' %}?item=room-{{ room.pk }}"><i class="bi bi-calendar3 me-1"></i>{% translate "Availability calendar" %}</a>
+</div>
+<div class="d-grid gap-4" style="max-width:1100px">
+  <section class="box" id="details">
+    <h2 class="h6">{% translate "Room details & base price" %}</h2>
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="section" value="details">
+      {% include "partials/form_fields.html" with form=form %}
+      <button class="btn btn-primary mt-3" type="submit">{% translate "Save room" %}</button>
+    </form>
+  </section>
+
+  {% with images=room.images.all %}{% include "dashboard/_photos.html" with kind="room" upload_url=request.path %}{% endwith %}
+
+  <section class="box" id="rates">
+    <h2 class="h6">{% translate "Seasonal prices" %}</h2>
+    <p class="small text-muted">{% translate "Override the nightly price for date ranges (e.g. high season, holidays). Seasonal prices take precedence over weekend prices." %}</p>
+    {% if rates %}
+    <div class="table-responsive"><table class="table table-sm align-middle">
+      <thead><tr><th>{% translate "Season" %}</th><th>{% translate "Dates" %}</th><th class="money">{% translate "Nightly" %}</th><th>{% translate "Min nights" %}</th><th></th></tr></thead>
+      <tbody>{% for r in rates %}<tr><td>{{ r.name }}</td><td>{{ r.start_date|date:"d M Y" }} – {{ r.end_date|date:"d M Y" }}</td><td class="money">{{ r.nightly_price|money }}</td><td>{{ r.min_nights }}</td>
+        <td class="text-end">{% if can_price %}<form method="post" action="{% url 'dashboard:room_child_delete' 'rate' r.pk %}" data-confirm="{% translate 'Remove this seasonal price?' %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger">{% translate "Remove" %}</button></form>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+    {% if can_price %}
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="section" value="rate">
+      {% include "partials/form_fields.html" with form=rate_form cols="col-md-4" %}
+      <button class="btn btn-outline-primary mt-3" type="submit">{% translate "Add seasonal price" %}</button>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="box" id="blocks">
+    <h2 class="h6">{% translate "Closed dates" %}</h2>
+    <p class="small text-muted">{% translate "Take units off sale for maintenance, owner use or bookings taken elsewhere. End date is the first night available again." %}</p>
+    {% if blocks %}
+    <div class="table-responsive"><table class="table table-sm align-middle">
+      <thead><tr><th>{% translate "From" %}</th><th>{% translate "Until" %}</th><th>{% translate "Units" %}</th><th>{% translate "Reason" %}</th><th></th></tr></thead>
+      <tbody>{% for b in blocks %}<tr><td>{{ b.start_date|date:"d M Y" }}</td><td>{{ b.end_date|date:"d M Y" }}</td><td>{{ b.units }}</td><td>{{ b.reason }}</td>
+        <td class="text-end"><form method="post" action="{% url 'dashboard:room_child_delete' 'block' b.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger">{% translate "Reopen" %}</button></form></td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+    <form method="post" novalidate data-date-pair>{% csrf_token %}<input type="hidden" name="section" value="block">
+      {% include "partials/form_fields.html" with form=block_form cols="col-md-3" %}
+      <button class="btn btn-outline-primary mt-3" type="submit">{% translate "Close dates" %}</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

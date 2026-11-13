@@ -1,0 +1,12 @@
+[Unit]
+Description=Heza nightly backup (database + media)
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=heza
+Group=heza
+WorkingDirectory=/srv/heza/app
+EnvironmentFile=/srv/heza/app/.env
+Environment=BACKUP_DIR=/srv/heza/backups MEDIA_ROOT=/srv/heza/media PRIVATE_MEDIA_ROOT=/srv/heza/private_media
+ExecStart=/srv/heza/app/deploy/backup.sh

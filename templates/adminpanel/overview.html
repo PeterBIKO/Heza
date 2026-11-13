@@ -1,0 +1,33 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Overview" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Platform overview" %} <span class="small text-muted fw-normal">· {% now "F Y" %}</span></h1>
+<div class="row g-3 mb-4">
+  <a class="col-6 col-xl-2 text-reset text-decoration-none" href="{% url 'adminpanel:vendors' %}?status=pending"><div class="kpi {% if pending_vendors %}border-warning{% endif %}"><div class="label">{% translate "Vendors to review" %}</div><div class="value">{{ pending_vendors }}</div></div></a>
+  <a class="col-6 col-xl-2 text-reset text-decoration-none" href="{% url 'adminpanel:properties' %}?status=pending"><div class="kpi {% if pending_properties %}border-warning{% endif %}"><div class="label">{% translate "Properties to verify" %}</div><div class="value">{{ pending_properties }}</div></div></a>
+  <a class="col-6 col-xl-2 text-reset text-decoration-none" href="{% url 'adminpanel:refunds' %}"><div class="kpi {% if pending_refunds %}border-warning{% endif %}"><div class="label">{% translate "Refunds pending" %}</div><div class="value">{{ pending_refunds }}</div></div></a>
+  <a class="col-6 col-xl-2 text-reset text-decoration-none" href="{% url 'adminpanel:payouts' %}"><div class="kpi {% if pending_payouts %}border-warning{% endif %}"><div class="label">{% translate "Payouts open" %}</div><div class="value">{{ pending_payouts }}</div></div></a>
+  <a class="col-6 col-xl-2 text-reset text-decoration-none" href="{% url 'adminpanel:reviews' %}"><div class="kpi"><div class="label">{% translate "Reviews to moderate" %}</div><div class="value">{{ pending_reviews }}</div></div></a>
+  <a class="col-6 col-xl-2 text-reset text-decoration-none" href="{% url 'adminpanel:webhooks' %}?invalid=1"><div class="kpi {% if bad_webhooks %}border-danger{% endif %}"><div class="label">{% translate "Bad webhooks (24h)" %}</div><div class="value {% if bad_webhooks %}text-danger{% endif %}">{{ bad_webhooks }}</div></div></a>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Gross collected (month)" %}</div><div class="value">{{ s.gross_collected|money:"" }}</div><div class="sub">RWF · {{ s.bookings }} {% translate "bookings" %}</div></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Commission earned" %}</div><div class="value text-forest">{{ s.commission|money:"" }}</div><div class="sub">{% translate "platform wallet" %} {{ platform_wallet.balance|money:"" }}</div></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Payment success" %}</div><div class="value">{% if s.payment_success_rate is not None %}{{ s.payment_success_rate }}%{% else %}—{% endif %}</div><div class="sub">{{ s.payments_failed }} {% translate "failed" %}</div></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Marketplace" %}</div><div class="value">{{ properties_live }}</div><div class="sub">{% translate "live listings" %} · {{ vendors_active }} {% translate "vendors" %} · {{ customers }} {% translate "guests" %}</div></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-8 d-grid gap-4 align-content-start">
+    <div class="box"><h2 class="h6">{% translate "Daily verified revenue" %}</h2><div class="bar-chart">{% for d in s.daily %}<div class="bar" title="{{ d.date|date:'d M' }}: {{ d.revenue|money }}"><span style="height:{{ d.pct }}%"></span></div>{% endfor %}</div></div>
+    <div class="box p-0"><div class="p-3 pb-0 d-flex justify-content-between"><h2 class="h6">{% translate "Latest bookings" %}</h2><a class="small" href="{% url 'adminpanel:bookings' %}">{% translate "All" %} →</a></div>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0"><tbody>{% for b in recent_bookings %}<tr><td><a href="{% url 'adminpanel:booking_detail' b.reference %}">{{ b.reference }}</a></td><td>{{ b.property.name }}</td><td>{{ b.status|status_badge:b.get_status_display }}</td><td class="money">{{ b.total|money }}</td></tr>{% empty %}<tr><td class="text-muted small">{% translate "No bookings yet." %}</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+  </div>
+  <div class="col-xl-4 d-grid gap-4 align-content-start">
+    <div class="box"><h2 class="h6">{% translate "Top vendors this month" %}</h2>{% for v in top_vendors %}<div class="d-flex justify-content-between small py-1 border-bottom"><span>{{ v.vendor__business_name }} <span class="text-muted">· {{ v.n }}</span></span><strong>{{ v.gmv|money }}</strong></div>{% empty %}<p class="small text-muted mb-0">{% translate "No confirmed bookings yet this month." %}</p>{% endfor %}</div>
+    <div class="box"><div class="d-flex justify-content-between"><h2 class="h6">{% translate "Recent admin & security events" %}</h2><a class="small" href="{% url 'adminpanel:audit' %}">{% translate "Audit log" %} →</a></div>
+      {% for a in recent_audit %}<div class="small py-1 border-bottom"><code>{{ a.action }}</code> <span class="text-muted">{{ a.actor.email|default:"system" }} · {{ a.created_at|timesince }}</span></div>{% empty %}<p class="small text-muted mb-0">—</p>{% endfor %}</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{% translate "Cancel booking" %} {{ b.reference }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:640px">
+  <a class="small" href="{{ b.get_absolute_url }}"><i class="bi bi-arrow-left"></i> {{ b.reference }}</a>
+  <h1 class="h3 mt-2">{% translate "Cancel this booking?" %}</h1>
+  <p class="text-muted">{{ b.property.name }} · {{ b.listing_name }}</p>
+  <div class="box box-sand mb-3">
+    <div class="small text-muted">{% translate "Policy" %}</div>
+    <div class="mb-2">{{ b.get_cancellation_policy_display }}</div>
+    <div class="quote-line"><span>{% translate "Paid so far" %}</span><strong>{{ preview.paid|money }}</strong></div>
+    <div class="quote-line"><span>{% translate "Refund" %} ({{ preview.percent|floatformat:0 }}%)</span><strong class="text-success">{{ preview.amount|money }}</strong></div>
+    <div class="small text-muted mt-2">{% translate "Refunds go back to your original payment method after a quick check by Heza. Amounts paid in cash at the property are refunded by the property." %}</div>
+  </div>
+  <form class="box" method="post" novalidate>{% csrf_token %}
+    {% include "partials/form_fields.html" with cols="col-12" %}
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-danger" type="submit">{% translate "Cancel booking" %}</button>
+      <a class="btn btn-light" href="{{ b.get_absolute_url }}">{% translate "Keep booking" %}</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

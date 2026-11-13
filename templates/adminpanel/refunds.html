@@ -1,0 +1,33 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Refunds" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Refunds" %}</h1>
+<ul class="nav nav-pills small mb-3">
+  {% for v, l in statuses %}<li class="nav-item"><a class="nav-link {% if status == v %}active{% endif %}" href="?status={{ v }}">{{ l }}</a></li>{% endfor %}
+  <li class="nav-item"><a class="nav-link {% if status == 'all' %}active{% endif %}" href="?status=all">{% translate "All" %}</a></li>
+</ul>
+<div class="d-grid gap-3">
+  {% for r in page.object_list %}
+  <div class="box d-flex flex-wrap justify-content-between gap-3">
+    <div>
+      <div><strong>{{ r.amount|money:r.currency }}</strong> {{ r.status|status_badge:r.get_status_display }}</div>
+      <div class="small"><a href="{% url 'adminpanel:booking_detail' r.booking.reference %}">{{ r.booking.reference }}</a> · {{ r.booking.property.name }} · {% translate "via" %} {{ r.payment.provider }} ({{ r.payment.reference }})</div>
+      <div class="small text-muted">{{ r.reason }} · {{ r.created_at|date:"d M Y H:i" }}{% if r.failure_reason %} · <span class="text-danger">{{ r.failure_reason }}</span>{% endif %}{% if r.provider_refund_id %} · {{ r.provider_refund_id }}{% endif %}</div>
+    </div>
+    {% if r.status == 'pending' or r.status == 'failed' %}
+    <form method="post" class="d-flex flex-wrap gap-2 align-items-start">{% csrf_token %}
+      <button class="btn btn-sm btn-primary" formaction="{% url 'adminpanel:refund_action' r.pk 'process' %}" data-confirm="{% translate 'Send this refund through the payment provider?' %}">{% translate "Process refund" %}</button>
+      <input class="form-control form-control-sm" name="note" placeholder="{% translate 'Reason to reject' %}" style="width:170px">
+      <button class="btn btn-sm btn-outline-danger" formaction="{% url 'adminpanel:refund_action' r.pk 'reject' %}">{% translate "Reject" %}</button>
+    </form>
+    {% elif r.status == 'processing' %}
+    <form method="post" action="{% url 'adminpanel:refund_action' r.pk 'settled' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-success">{% translate "Mark settled" %}</button></form>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="box">{% translate "Nothing here." as t %}{% include "partials/empty.html" with icon="arrow-return-left" text=t %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

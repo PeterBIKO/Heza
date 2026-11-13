@@ -1,0 +1,13 @@
+{% extends "accounts/_auth_layout.html" %}
+{% load i18n %}
+{% block title %}{% translate "Create account" %} · Heza{% endblock %}
+{% block auth %}
+<p class="small-caps mb-1">{% translate "Guests" %}</p>
+<h1 class="h3 mb-1">{% translate "Create your Heza account" %}</h1>
+<p class="text-muted mb-4">{% translate "Book stays and venues, pay by MoMo or card, and keep every confirmation in one place." %}</p>
+<form method="post" novalidate>{% csrf_token %}
+  {% include "partials/form_fields.html" %}
+  <button class="btn btn-primary w-100 mt-4" type="submit">{% translate "Create account" %}</button>
+</form>
+<p class="small text-muted mt-4">{% translate "Already have an account?" %} <a href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a> · <a href="{% url 'vendors:register' %}">{% translate "Register a business instead" %}</a></p>
+{% endblock %}

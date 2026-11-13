@@ -1,0 +1,19 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n %}
+{% block page_title %}{% translate "Audit log" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Audit log" %}</h1>
+<form class="box mb-3 d-flex flex-wrap gap-2 align-items-end" method="get">
+  <div><label class="form-label small" for="aa">{% translate "Action prefix" %}</label><input class="form-control" id="aa" name="action" value="{{ request.GET.action }}" placeholder="payment."></div>
+  <div class="flex-grow-1"><label class="form-label small" for="aq">{% translate "Search" %}</label><input class="form-control" id="aq" name="q" value="{{ request.GET.q }}" placeholder="{% translate 'Description, actor email or target id' %}"></div>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+</form>
+<div class="box p-0"><div class="table-responsive"><table class="table table-sm align-middle mb-0">
+  <thead><tr><th>{% translate "When" %}</th><th>{% translate "Action" %}</th><th>{% translate "Actor" %}</th><th>{% translate "Target" %}</th><th>{% translate "Details" %}</th><th>IP</th></tr></thead>
+  <tbody>{% for a in page.object_list %}<tr>
+    <td class="small text-nowrap">{{ a.created_at|date:"d M Y H:i:s" }}</td><td><code>{{ a.action }}</code></td><td class="small">{{ a.actor.email|default:"system" }}</td>
+    <td class="small">{{ a.target_type }} {{ a.target_id }}</td><td class="small">{{ a.description|truncatechars:80 }}{% if a.metadata %} <span class="text-muted">{{ a.metadata }}</span>{% endif %}</td><td class="small text-muted">{{ a.ip_address|default:"" }}</td>
+  </tr>{% empty %}<tr><td colspan="6" class="text-muted small">{% translate "No entries." %}</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

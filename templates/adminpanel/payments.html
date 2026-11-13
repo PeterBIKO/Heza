@@ -1,0 +1,21 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Payments" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Payments" %}</h1>
+{% translate "Payment, booking or provider reference" as ph %}{% include "adminpanel/_filters.html" with placeholder=ph %}
+<div class="box p-0">
+  <div class="table-responsive"><table class="table align-middle mb-0">
+    <thead><tr><th>{% translate "Payment" %}</th><th>{% translate "Booking" %}</th><th>{% translate "Provider" %}</th><th>{% translate "Status" %}</th><th class="money">{% translate "Amount" %}</th><th></th></tr></thead>
+    <tbody>{% for p in page.object_list %}<tr>
+      <td><strong>{{ p.reference }}</strong><div class="small text-muted">{{ p.created_at|date:"d M Y H:i" }} · {{ p.get_purpose_display }}</div></td>
+      <td><a href="{% url 'adminpanel:booking_detail' p.booking.reference %}">{{ p.booking.reference }}</a><div class="small text-muted">{{ p.booking.property.name }}</div></td>
+      <td class="small">{{ p.provider }}{% if p.payment_method %} · {{ p.payment_method }}{% endif %}<div><code>{{ p.provider_transaction_id|default:"—" }}</code></div></td>
+      <td>{{ p.status|status_badge:p.get_status_display }}{% if p.failure_reason %}<div class="small text-muted">{{ p.failure_reason|truncatechars:60 }}</div>{% endif %}</td>
+      <td class="money">{{ p.amount|money:p.currency }}</td>
+      <td class="text-end">{% if p.provider != 'offline' and p.status != 'successful' %}<form method="post" action="{% url 'adminpanel:payment_verify' p.pk %}">{% csrf_token %}<button class="btn btn-sm btn-light" title="{% translate 'Ask the provider for the current status' %}"><i class="bi bi-arrow-repeat"></i> {% translate "Re-verify" %}</button></form>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="6">{% translate "No payments." as t %}{% include "partials/empty.html" with icon="credit-card" text=t %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

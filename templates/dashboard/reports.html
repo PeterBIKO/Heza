@@ -1,0 +1,7 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% block page_title %}{% translate "Reports" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Reports" %}</h1>
+{% include "dashboard/_reports_body.html" %}
+{% endblock %}

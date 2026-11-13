@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{% block page_title %}{% translate "Admin" %}{% endblock %} · Heza Admin{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block content %}
+<div class="dash">
+  <aside class="dash-side dark">
+    <a class="brand navbar-brand display-font fs-3 fw-bold" href="{% url 'adminpanel:overview' %}">heza<span class="text-gold">.</span> <span class="badge bg-gold text-dark fs-6 fw-semibold align-middle">Admin</span></a>
+    {% include "adminpanel/_side.html" %}
+  </aside>
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="adminNav" aria-labelledby="adminNavLabel">
+    <div class="offcanvas-header"><h2 class="offcanvas-title h5" id="adminNavLabel">Heza Admin</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{% translate 'Close' %}"></button></div>
+    <div class="offcanvas-body p-0 dash-side-mobile">{% include "adminpanel/_side.html" %}</div>
+  </div>
+  <div class="dash-main">
+    <header class="dash-top d-flex align-items-center gap-2">
+      <button class="btn btn-light d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminNav" aria-controls="adminNav" aria-label="{% translate 'Menu' %}"><i class="bi bi-list"></i></button>
+      <div class="fw-semibold">{% translate "Platform administration" %}</div>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-light btn-sm" href="{% url 'public:home' %}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right me-1"></i>{% translate "Website" %}</a>
+        <a class="btn btn-light btn-sm" href="/django-admin/"><i class="bi bi-database me-1"></i>{% translate "Data admin" %}</a>
+        <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-light btn-sm" type="submit" aria-label="{% translate 'Sign out' %}"><i class="bi bi-box-arrow-right"></i></button></form>
+      </div>
+    </header>
+    <div class="dash-body">
+      {% include "partials/messages.html" %}
+      {% block dash %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

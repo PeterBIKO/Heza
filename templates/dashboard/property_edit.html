@@ -1,0 +1,77 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{{ p.name }}{% endblock %}
+{% block dash %}
+<a class="small" href="{% url 'dashboard:properties' %}"><i class="bi bi-arrow-left"></i> {% translate "Properties" %}</a>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mt-2 mb-4">
+  <div><h1 class="h4 mb-1">{{ p.name }} {{ p.status|status_badge:p.get_status_display }}</h1><div class="small text-muted">{{ p.get_category_display }} · {{ p.city }}</div></div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-light" href="{{ p.get_absolute_url }}" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>{% if p.is_public %}{% translate "View live" %}{% else %}{% translate "Preview" %}{% endif %}</a>
+    {% if p.status == 'draft' or p.status == 'rejected' %}
+    <form method="post" action="{% url 'dashboard:property_submit' p.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit"><i class="bi bi-send me-1"></i>{% translate "Submit for verification" %}</button></form>
+    {% endif %}
+  </div>
+</div>
+{% if p.status == 'rejected' and p.review_note %}<div class="alert alert-danger"><strong>{% translate "Changes requested:" %}</strong> {{ p.review_note }}</div>{% endif %}
+{% if p.status == 'pending' %}<div class="alert alert-info">{% translate "Heza is verifying this property. You can keep editing; changes are visible to reviewers." %}</div>{% endif %}
+
+<ul class="nav nav-pills mb-3 small flex-nowrap overflow-auto">
+  <li class="nav-item"><a class="nav-link" href="#details">{% translate "Details" %}</a></li>
+  <li class="nav-item"><a class="nav-link" href="#photos">{% translate "Photos" %}</a></li>
+  <li class="nav-item"><a class="nav-link" href="#rooms">{% translate "Rooms" %}</a></li>
+  <li class="nav-item"><a class="nav-link" href="#venues">{% translate "Event spaces" %}</a></li>
+  <li class="nav-item"><a class="nav-link" href="#policies">{% translate "Policies & payment" %}</a></li>
+</ul>
+
+<div class="d-grid gap-4" style="max-width:1100px">
+  <section class="box" id="details">
+    <h2 class="h6">{% translate "Details" %}</h2>
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="section" value="details">
+      {% include "partials/form_fields.html" with form=form %}
+      <button class="btn btn-primary mt-3" type="submit">{% translate "Save details" %}</button>
+    </form>
+  </section>
+
+  {% url 'dashboard:property_images' p.pk as upload_url %}
+  {% include "dashboard/_photos.html" with kind="property" upload_url=upload_url %}
+
+  <section class="box" id="rooms">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 mb-0">{% translate "Room types" %}</h2><a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:room_create' p.pk %}"><i class="bi bi-plus-lg"></i> {% translate "Add room type" %}</a></div>
+    {% if rooms %}
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+      <thead><tr><th>{% translate "Room" %}</th><th>{% translate "Sleeps" %}</th><th>{% translate "Units" %}</th><th class="money">{% translate "Nightly" %}</th><th></th></tr></thead>
+      <tbody>{% for r in rooms %}<tr>
+        <td><strong>{{ r.name }}</strong>{% if not r.is_active %} <span class="badge text-bg-light">{% translate "hidden" %}</span>{% endif %}<div class="small text-muted">{{ r.get_category_display }} · {{ r.bed_count }} × {{ r.get_bed_type_display }}</div></td>
+        <td>{{ r.max_adults }}{% if r.max_children %} + {{ r.max_children }}{% endif %}</td>
+        <td>{{ r.quantity }}</td>
+        <td class="money">{{ r.base_price|money }}{% if r.weekend_price %}<div class="small text-muted">{% translate "wknd" %} {{ r.weekend_price|money:"" }}</div>{% endif %}</td>
+        <td class="text-end"><a class="btn btn-sm btn-light" href="{% url 'dashboard:room_edit' r.pk %}">{% translate "Edit" %}</a></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="small text-muted mb-0">{% translate "No room types yet. Hotels, lodges, resorts, guesthouses and apartments need at least one." %}</p>{% endif %}
+  </section>
+
+  <section class="box" id="venues">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 mb-0">{% translate "Event spaces" %}</h2><a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:venue_create' p.pk %}"><i class="bi bi-plus-lg"></i> {% translate "Add event space" %}</a></div>
+    {% if venues %}
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+      <thead><tr><th>{% translate "Space" %}</th><th>{% translate "Capacity" %}</th><th>{% translate "Prices" %}</th><th></th></tr></thead>
+      <tbody>{% for v in venues %}<tr>
+        <td><strong>{{ v.name }}</strong>{% if not v.is_active %} <span class="badge text-bg-light">{% translate "hidden" %}</span>{% endif %}<div class="small text-muted">{{ v.get_setting_display }}</div></td>
+        <td>{{ v.capacity_seated }} / {{ v.capacity_standing }}</td>
+        <td class="small">{% if v.hourly_price %}{{ v.hourly_price|money }}/h{% endif %}{% if v.full_day_price %} · {% translate "day" %} {{ v.full_day_price|money:"" }}{% endif %}{% if v.event_price %} · {% translate "event" %} {{ v.event_price|money:"" }}{% endif %}</td>
+        <td class="text-end"><a class="btn btn-sm btn-light" href="{% url 'dashboard:venue_edit' v.pk %}">{% translate "Edit" %}</a></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="small text-muted mb-0">{% translate "No event spaces. Add halls, gardens, conference or meeting rooms here." %}</p>{% endif %}
+  </section>
+
+  <section class="box" id="policies">
+    <h2 class="h6">{% translate "Policies & payment" %}</h2>
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="section" value="policies">
+      {% include "partials/form_fields.html" with form=policy_form %}
+      <button class="btn btn-primary mt-3" type="submit">{% translate "Save policies" %}</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Confirm your email" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:620px">
+  <div class="box text-center p-5">
+    <i class="bi bi-envelope-check fs-1 text-gold"></i>
+    {% if user.is_authenticated and user.is_email_verified %}
+      <h1 class="h4 mt-2">{% translate "Your email is confirmed" %}</h1>
+      <a class="btn btn-primary mt-3" href="{% url 'accounts:after_login' %}">{% translate "Continue" %}</a>
+    {% else %}
+      <h1 class="h4 mt-2">{% translate "Check your inbox" %}</h1>
+      <p class="text-muted">{% if user.is_authenticated %}{% blocktranslate with e=user.email %}We sent a confirmation link to <strong>{{ e }}</strong>. Click it to start booking.{% endblocktranslate %}{% else %}{% translate "Open the confirmation link we emailed you." %}{% endif %}</p>
+      {% if dev_link %}
+        <div class="alert alert-warning small text-start"><strong>{% translate "Development mode:" %}</strong> {% translate "emails are printed to the server console. Shortcut:" %} <a href="{{ dev_link }}">{% translate "confirm email now" %}</a></div>
+      {% endif %}
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'accounts:resend_verification' %}">{% csrf_token %}
+        <button class="btn btn-outline-primary mt-2" type="submit">{% translate "Resend link" %}</button>
+      </form>
+      {% endif %}
+      <a class="btn btn-link mt-2" href="{% url 'public:home' %}">{% translate "Keep browsing" %}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

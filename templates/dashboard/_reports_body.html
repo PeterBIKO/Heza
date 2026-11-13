@@ -1,0 +1,41 @@
+{% load i18n heza %}
+<form class="box mb-4 d-flex flex-wrap gap-2 align-items-end" method="get">
+  <div><label class="form-label small" for="rs">{% translate "From" %}</label><input class="form-control" type="date" id="rs" name="start" value="{{ start|date:'Y-m-d' }}"></div>
+  <div><label class="form-label small" for="re">{% translate "To" %}</label><input class="form-control" type="date" id="re" name="end" value="{{ end|date:'Y-m-d' }}"></div>
+  <button class="btn btn-primary" type="submit">{% translate "Apply" %}</button>
+  <div class="ms-auto dropdown">
+    <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" type="button"><i class="bi bi-download me-1"></i>{% translate "Download CSV" %}</button>
+    <ul class="dropdown-menu dropdown-menu-end">{% for k in kinds %}<li><a class="dropdown-item text-capitalize" href="{% qs download=k %}">{{ k }}</a></li>{% endfor %}</ul>
+  </div>
+</form>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-2"><div class="kpi"><div class="label">{% translate "Bookings" %}</div><div class="value">{{ s.bookings }}</div><div class="sub">{{ s.confirmed }} {% translate "confirmed" %}</div></div></div>
+  <div class="col-6 col-xl-2"><div class="kpi"><div class="label">{% translate "Collected" %}</div><div class="value">{{ s.gross_collected|money:"" }}</div><div class="sub">RWF</div></div></div>
+  <div class="col-6 col-xl-2"><div class="kpi"><div class="label">{% translate "Refunded" %}</div><div class="value">{{ s.refunded|money:"" }}</div><div class="sub">RWF</div></div></div>
+  <div class="col-6 col-xl-2"><div class="kpi"><div class="label">{% translate "Commission" %}</div><div class="value">{{ s.commission|money:"" }}</div><div class="sub">{% if platform %}{% translate "platform revenue" %}{% else %}{% translate "paid to Heza" %}{% endif %}</div></div></div>
+  <div class="col-6 col-xl-2"><div class="kpi"><div class="label">{% translate "Payment success" %}</div><div class="value">{% if s.payment_success_rate is not None %}{{ s.payment_success_rate }}%{% else %}—{% endif %}</div><div class="sub">{{ s.payments_successful }} ok · {{ s.payments_failed }} {% translate "failed" %}</div></div></div>
+  <div class="col-6 col-xl-2"><div class="kpi"><div class="label">{% translate "Cancellations" %}</div><div class="value">{{ s.cancellation_rate }}%</div><div class="sub">{{ s.cancelled }} {% translate "bookings" %}</div></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-7"><div class="box h-100">
+    <div class="d-flex justify-content-between"><h2 class="h6">{% translate "Daily verified revenue" %}</h2><span class="small text-muted">{{ start|date:"d M" }} – {{ end|date:"d M Y" }}</span></div>
+    <div class="bar-chart mt-2" role="img" aria-label="{% translate 'Daily revenue chart' %}">{% for d in s.daily %}<div class="bar" title="{{ d.date|date:'d M' }}: {{ d.revenue|money }} · {{ d.bookings }} {% translate 'bookings' %}"><span style="height:{{ d.pct }}%"></span></div>{% endfor %}</div>
+    <div class="d-flex justify-content-between small text-muted mt-1"><span>{{ start|date:"d M" }}</span><span>{{ end|date:"d M" }}</span></div>
+    <hr>
+    <div class="row small g-2">
+      <div class="col-6 col-md-3"><div class="text-muted">{% translate "Net revenue" %}</div><strong>{{ s.net_revenue|money }}</strong></div>
+      <div class="col-6 col-md-3"><div class="text-muted">{% translate "Partner net" %}</div><strong>{{ s.vendor_net|money }}</strong></div>
+      <div class="col-6 col-md-3"><div class="text-muted">{% translate "Occupancy" %}</div><strong>{% if s.occupancy_rate is not None %}{{ s.occupancy_rate }}%{% else %}—{% endif %}</strong></div>
+      <div class="col-6 col-md-3"><div class="text-muted">{% translate "Room-nights" %}</div><strong>{{ s.room_nights_sold }} / {{ s.room_nights_available }}</strong></div>
+    </div>
+  </div></div>
+  <div class="col-xl-5"><div class="box h-100">
+    <h2 class="h6">{% translate "Occupancy by property" %}</h2>
+    {% for o in occupancy %}
+      <div class="mb-2"><div class="d-flex justify-content-between small"><span>{{ o.property }} <span class="text-muted">· {{ o.city }}</span></span><strong>{{ o.rate }}%</strong></div>
+      <div class="progress" style="height:8px" role="progressbar" aria-valuenow="{{ o.rate }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar bg-forest" style="width:{{ o.rate }}%"></div></div></div>
+    {% empty %}<p class="small text-muted mb-0">{% translate "No room inventory in this scope." %}</p>{% endfor %}
+    <h2 class="h6 mt-4">{% translate "Bookings by status" %}</h2>
+    {% for k, v in s.by_status.items %}<div class="d-flex justify-content-between small py-1 border-bottom"><span>{{ k|status_badge }}</span><strong>{{ v }}</strong></div>{% empty %}<p class="small text-muted mb-0">{% translate "No bookings in this range." %}</p>{% endfor %}
+  </div></div>
+</div>

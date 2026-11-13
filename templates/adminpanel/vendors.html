@@ -1,0 +1,21 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Vendors" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Vendors" %}</h1>
+{% translate "Business name, email or TIN" as ph %}{% include "adminpanel/_filters.html" with placeholder=ph %}
+<div class="box p-0">
+  <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>{% translate "Business" %}</th><th>{% translate "Owner" %}</th><th>{% translate "Properties" %}</th><th>{% translate "Commission" %}</th><th>{% translate "Status" %}</th><th>{% translate "Submitted" %}</th></tr></thead>
+    <tbody>{% for v in page.object_list %}<tr>
+      <td><a class="fw-semibold" href="{% url 'adminpanel:vendor_detail' v.pk %}">{{ v.business_name }}</a><div class="small text-muted">{{ v.city }} · TIN {{ v.tin|default:"—" }}</div></td>
+      <td class="small">{{ v.owner.display_name }}<div class="text-muted">{{ v.owner.email }}</div></td>
+      <td>{{ v.n_props }}</td>
+      <td>{% if v.commission_rate is not None %}{{ v.commission_rate|floatformat:1 }}%{% else %}<span class="text-muted">{% translate "default" %}</span>{% endif %}</td>
+      <td>{{ v.status|status_badge:v.get_status_display }}</td>
+      <td class="small">{{ v.submitted_at|date:"d M Y"|default:"—" }}</td>
+    </tr>{% empty %}<tr><td colspan="6">{% translate "No vendors match." as t %}{% include "partials/empty.html" with icon="shop" text=t %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

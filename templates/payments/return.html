@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{% translate "Payment status" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:640px">
+  <div class="box text-center p-5">
+    {% if payment.status == 'successful' %}
+      <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+      <h1 class="h3 mt-2">{% translate "Payment received" %}</h1>
+      <p class="text-muted">{% blocktranslate with a=payment.amount|money:payment.currency r=payment.reference %}{{ a }} verified with the provider (ref {{ r }}).{% endblocktranslate %}</p>
+      {% if b.status == 'confirmed' %}<p class="fw-semibold">{% blocktranslate with ref=b.reference %}Booking {{ ref }} is confirmed.{% endblocktranslate %}</p>
+      {% elif b.status == 'cancelled' %}<p class="text-danger">{% translate "Unfortunately the dates were taken before your payment arrived. A full refund has been queued." %}</p>{% endif %}
+    {% elif payment.status == 'failed' or payment.status == 'cancelled' %}
+      <i class="bi bi-x-circle-fill fs-1 text-danger"></i>
+      <h1 class="h3 mt-2">{% translate "Payment not completed" %}</h1>
+      <p class="text-muted">{{ payment.failure_reason|default:_("The payment was declined or cancelled.") }}</p>
+    {% else %}
+      <i class="bi bi-hourglass-split fs-1 text-gold"></i>
+      <h1 class="h3 mt-2">{% translate "Waiting for confirmation" %}</h1>
+      <p class="text-muted">{% translate "The provider hasn't confirmed this payment yet. Mobile money approvals can take a minute — refresh shortly. We'll also email you." %}</p>
+      <a class="btn btn-outline-primary" href="{{ request.path }}">{% translate "Check again" %}</a>
+    {% endif %}
+    <div class="mt-4"><a class="btn btn-primary" href="{{ b.get_absolute_url }}">{% translate "View booking" %}</a></div>
+  </div>
+</div>
+{% endblock %}

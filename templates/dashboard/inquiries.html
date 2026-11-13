@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Inquiries" %}{% endblock %}
+{% block dash %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">{% translate "Guest inquiries" %}</h1>
+  <div class="btn-group btn-group-sm"><a class="btn {% if request.GET.show != 'all' %}btn-primary{% else %}btn-light{% endif %}" href="?">{% translate "Open" %}</a><a class="btn {% if request.GET.show == 'all' %}btn-primary{% else %}btn-light{% endif %}" href="?show=all">{% translate "All" %}</a></div>
+</div>
+<div class="d-grid gap-3">
+  {% for q in page.object_list %}
+  <div class="box">
+    <div class="d-flex flex-wrap justify-content-between gap-2">
+      <div><strong>{{ q.name }}</strong> <span class="small text-muted">· {{ q.property.name }} · {{ q.created_at|date:"d M Y H:i" }}</span>
+        <div class="small"><a href="mailto:{{ q.email }}">{{ q.email }}</a>{% if q.phone %} · <a href="tel:{{ q.phone }}">{{ q.phone }}</a>{% endif %}</div></div>
+      {% if q.is_resolved %}<span class="badge text-bg-success">{% translate "resolved" %}</span>{% else %}<span class="badge text-bg-warning">{% translate "open" %}</span>{% endif %}
+    </div>
+    <p class="mt-2">{{ q.message|linebreaksbr }}</p>
+    {% if q.reply %}<div class="box-sand p-3 rounded-3 small"><strong>{% translate "Replied" %}</strong> {{ q.replied_at|date:"d M H:i" }}<div>{{ q.reply|linebreaksbr }}</div></div>
+    {% else %}
+    <form method="post" action="{% url 'dashboard:inquiry_reply' q.pk %}">{% csrf_token %}
+      <label class="form-label small" for="r{{ q.pk }}">{% translate "Reply by email" %}</label>
+      <textarea class="form-control" id="r{{ q.pk }}" name="reply" rows="3" maxlength="2000"></textarea>
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-sm btn-primary" type="submit">{% translate "Send reply" %}</button>
+        {% if not q.is_resolved %}<button class="btn btn-sm btn-light" type="submit" name="action" value="resolve" formnovalidate>{% translate "Mark resolved" %}</button>{% endif %}
+      </div>
+    </form>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="box">{% translate "No open inquiries." as t %}{% include "partials/empty.html" with icon="chat-left-text" text=t %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

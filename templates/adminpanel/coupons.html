@@ -1,0 +1,23 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Promo codes" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Promo codes" %}</h1>
+<div class="row g-4">
+  <div class="col-xl-7"><div class="box p-0"><div class="table-responsive"><table class="table align-middle mb-0">
+    <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Owner" %}</th><th>{% translate "Discount" %}</th><th>{% translate "Used" %}</th><th></th></tr></thead>
+    <tbody>{% for c in coupons %}<tr>
+      <td><code>{{ c.code }}</code><div class="small text-muted">{{ c.description }}</div></td>
+      <td class="small">{{ c.vendor.business_name|default:"Heza (platform)" }}</td>
+      <td>{% if c.percent_off %}{{ c.percent_off|floatformat:0 }}%{% else %}{{ c.amount_off|money }}{% endif %}</td>
+      <td>{{ c.times_used }}{% if c.max_uses %}/{{ c.max_uses }}{% endif %}</td>
+      <td class="text-end"><form method="post" action="{% url 'adminpanel:coupon_toggle' c.pk %}">{% csrf_token %}<button class="btn btn-sm btn-light">{% if c.is_active %}{% translate "Pause" %}{% else %}{% translate "Activate" %}{% endif %}</button></form></td>
+    </tr>{% empty %}<tr><td colspan="5" class="text-muted small">{% translate "No codes yet." %}</td></tr>{% endfor %}</tbody>
+  </table></div></div></div>
+  <div class="col-xl-5"><div class="box">
+    <h2 class="h6">{% translate "New platform-funded code" %}</h2>
+    <p class="small text-muted">{% translate "Works on every property. The discount reduces the booking total; commission is calculated on what the guest pays." %}</p>
+    <form method="post" novalidate>{% csrf_token %}{% include "partials/form_fields.html" %}<button class="btn btn-primary mt-3" type="submit">{% translate "Create" %}</button></form>
+  </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}Heza Sandbox Gateway{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="sandbox-banner py-2 text-center small fw-semibold">{% translate "TEST MODE — Heza Sandbox Gateway. No real money moves. Disabled in production." %}</div>
+<div class="container py-5" style="max-width:520px">
+  <div class="box shadow-sm p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="fw-bold"><i class="bi bi-shield-lock text-forest"></i> Sandbox Pay</div>
+      <div class="small text-muted">{{ txn.txn_id }}</div>
+    </div>
+    <div class="text-muted small">{% translate "Paying" %}</div>
+    <div class="display-6 display-font mb-1">{{ txn.amount|money:txn.currency }}</div>
+    {% if payment %}<div class="small text-muted mb-4">{{ payment.booking.property.name }} · {% translate "booking" %} {{ payment.booking.reference }}</div>{% endif %}
+    <form method="post">{% csrf_token %}
+      <div class="mb-3">
+        <div class="form-label">{% translate "Test method" %}</div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="method" value="mobilemoneyrw" id="m1" checked><label class="form-check-label" for="m1">MTN MoMo (test number 0788 000 001)</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="method" value="card" id="m2"><label class="form-check-label" for="m2">{% translate "Test card" %} 4242 •••• •••• 4242</label></div>
+      </div>
+      <p class="small text-muted">{% translate "Approving sends a signed webhook to Heza, which then verifies the transaction with this gateway before confirming the booking." %}</p>
+      <div class="d-grid gap-2">
+        <button class="btn btn-primary btn-lg" type="submit" name="action" value="approve">{% translate "Approve payment" %}</button>
+        <button class="btn btn-outline-danger" type="submit" name="action" value="decline">{% translate "Decline" %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

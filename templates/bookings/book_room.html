@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static i18n heza %}
+{% block title %}{% translate "Book" %} {{ room.name }} · {{ p.name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <a class="small" href="{{ p.get_absolute_url }}#rooms"><i class="bi bi-arrow-left"></i> {{ p.name }}</a>
+  <h1 class="h3 mt-2 mb-4">{% blocktranslate with r=room.name %}Reserve {{ r }}{% endblocktranslate %}</h1>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <form method="post" novalidate data-room-quote="{% url 'api:room_quote' room.pk %}" id="bookForm">{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>{% endif %}
+        <div class="box mb-3">
+          <h2 class="h6 mb-3">{% translate "Your stay" %}</h2>
+          <div class="row g-3" data-date-pair>
+            {% for f in form %}{% if f.name in "check_in check_out rooms adults children" %}
+              <div class="{% if f.name == 'check_in' or f.name == 'check_out' %}col-6{% else %}col-4{% endif %}">
+                <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+              </div>
+            {% endif %}{% endfor %}
+          </div>
+          <div class="form-text mt-2">{% blocktranslate with a=room.max_adults c=room.max_children q=room.quantity %}Each unit sleeps up to {{ a }} adults and {{ c }} children. {{ q }} units in total.{% endblocktranslate %}</div>
+        </div>
+        <div class="box mb-3">
+          <h2 class="h6 mb-3">{% translate "Guest details" %}</h2>
+          <div class="row g-3">
+            {% for f in form %}{% if f.name in "guest_name guest_email guest_phone special_requests coupon_code" %}
+              <div class="{% if f.name == 'special_requests' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+              </div>
+            {% endif %}{% endfor %}
+            {% if form.pay_later %}
+              <div class="col-12"><div class="form-check">{{ form.pay_later }}<label class="form-check-label" for="{{ form.pay_later.id_for_label }}">{{ form.pay_later.label }}</label></div></div>
+            {% endif %}
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg w-100" type="submit">{% translate "Continue to payment" %}</button>
+        <p class="small text-muted mt-2 text-center">{% translate "You won't be charged yet — next you choose deposit or full payment and your method." %}</p>
+      </form>
+    </div>
+    <div class="col-lg-5">{% include "bookings/_quote_panel.html" with title=room.name %}</div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/booking.js' %}"></script>{% endblock %}

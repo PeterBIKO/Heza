@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}404 · Heza{% endblock %}
+{% block content %}
+<div class="container py-5 text-center" style="max-width:620px">
+  <div class="display-1 display-font text-gold">404</div>
+  <h1 class="h3">{% translate "We couldn't find that page" %}</h1>
+  <p class="text-muted">{% if message %}{{ message }}{% else %}{% translate "The link may be old, or the listing is no longer public." %}{% endif %}</p>
+  <a class="btn btn-primary" href="/">{% translate "Back to Heza" %}</a>
+</div>
+{% endblock %}

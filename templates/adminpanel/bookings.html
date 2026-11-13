@@ -1,0 +1,21 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Bookings" %}{% endblock %}
+{% block dash %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h4 mb-0">{% translate "All bookings" %}</h1><a class="btn btn-light btn-sm" href="{% url 'adminpanel:reports' %}?download=bookings"><i class="bi bi-download me-1"></i>CSV</a></div>
+{% translate "Reference, guest or property" as ph %}{% include "adminpanel/_filters.html" with placeholder=ph %}
+<div class="box p-0">
+  <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>{% translate "Reference" %}</th><th>{% translate "Property" %}</th><th>{% translate "Guest" %}</th><th>{% translate "Starts" %}</th><th>{% translate "Status" %}</th><th class="money">{% translate "Total" %}</th></tr></thead>
+    <tbody>{% for b in page.object_list %}<tr>
+      <td><a class="fw-semibold" href="{% url 'adminpanel:booking_detail' b.reference %}">{{ b.reference }}</a><div class="small text-muted">{{ b.created_at|date:"d M H:i" }}</div></td>
+      <td>{{ b.property.name }}<div class="small text-muted">{{ b.vendor.business_name }}</div></td>
+      <td class="small">{{ b.guest_name }}<div class="text-muted">{{ b.customer.email }}</div></td>
+      <td class="small">{{ b.starts_on|date:"d M Y" }}</td>
+      <td>{{ b.status|status_badge:b.get_status_display }} {{ b.payment_status|status_badge:b.get_payment_status_display }}</td>
+      <td class="money">{{ b.total|money }}</td>
+    </tr>{% empty %}<tr><td colspan="6">{% translate "No bookings match." as t %}{% include "partials/empty.html" with icon="journal-x" text=t %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

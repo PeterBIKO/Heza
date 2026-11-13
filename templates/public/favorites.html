@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Favourites" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1 class="h3 mb-4">{% translate "Your favourites" %}</h1>
+  {% if favorites %}
+    <div class="row g-4">{% for f in favorites %}{% with p=f.property %}<div class="col-sm-6 col-lg-3">{% include "partials/property_card.html" %}</div>{% endwith %}{% endfor %}</div>
+  {% else %}
+    {% translate "Tap the heart on any place to save it here." as t %}{% url 'public:search' as surl %}{% translate "Find places" as al %}
+    {% include "partials/empty.html" with icon="heart" text=t action_url=surl action_label=al %}
+  {% endif %}
+</div>
+{% endblock %}

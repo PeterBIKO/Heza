@@ -1,0 +1,57 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{{ v.business_name }}{% endblock %}
+{% block dash %}
+<a class="small" href="{% url 'adminpanel:vendors' %}"><i class="bi bi-arrow-left"></i> {% translate "Vendors" %}</a>
+<div class="d-flex flex-wrap justify-content-between gap-2 mt-2 mb-4">
+  <div><h1 class="h4 mb-1">{{ v.business_name }} {{ v.status|status_badge:v.get_status_display }}</h1><div class="small text-muted">{{ v.legal_name }} · TIN {{ v.tin|default:"—" }} · {{ v.address }}, {{ v.city }}</div></div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-7 d-grid gap-4 align-content-start">
+    <div class="box">
+      <h2 class="h6">{% translate "Decision" %}</h2>
+      {% if v.review_note %}<p class="small"><strong>{% translate "Last note:" %}</strong> {{ v.review_note }} <span class="text-muted">· {{ v.reviewed_by.email }} {{ v.reviewed_at|date:"d M Y" }}</span></p>{% endif %}
+      <form method="post" class="d-grid gap-2">{% csrf_token %}
+        <textarea class="form-control" name="note" rows="2" maxlength="500" placeholder="{% translate 'Note to the vendor (required to reject or suspend)' %}"></textarea>
+        <div class="d-flex flex-wrap gap-2">
+          {% if v.status != 'approved' and v.status != 'suspended' %}<button class="btn btn-success" formaction="{% url 'adminpanel:vendor_action' v.pk 'approve' %}">{% translate "Approve" %}</button>
+          <button class="btn btn-outline-danger" formaction="{% url 'adminpanel:vendor_action' v.pk 'reject' %}">{% translate "Request changes" %}</button>{% endif %}
+          {% if v.status == 'approved' %}<button class="btn btn-outline-danger" formaction="{% url 'adminpanel:vendor_action' v.pk 'suspend' %}" data-confirm="{% translate 'Suspend this vendor? All listings go offline.' %}">{% translate "Suspend" %}</button>{% endif %}
+          {% if v.status == 'suspended' %}<button class="btn btn-success" formaction="{% url 'adminpanel:vendor_action' v.pk 'reinstate' %}">{% translate "Reinstate" %}</button>{% endif %}
+        </div>
+      </form>
+      <div class="d-flex flex-wrap gap-2 mt-3">{% for s in steps %}<span class="badge rounded-pill {% if s.done %}text-bg-success{% else %}text-bg-light{% endif %}">{{ s.label }}</span>{% endfor %}</div>
+    </div>
+    <div class="box">
+      <h2 class="h6">{% translate "Documents" %}</h2>
+      {% for d in documents %}
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-2">
+          <div><a href="{{ d.get_absolute_url }}" target="_blank" rel="noopener"><i class="bi bi-file-earmark-text"></i> {{ d.get_doc_type_display }}</a> {{ d.status|status_badge:d.get_status_display }}<div class="small text-muted">{{ d.original_name }} · {{ d.created_at|date:"d M Y" }}{% if d.note %} · {{ d.note }}{% endif %}</div></div>
+          <form method="post" class="d-flex gap-1">{% csrf_token %}<input class="form-control form-control-sm" name="note" placeholder="{% translate 'Note' %}" maxlength="255">
+            <button class="btn btn-sm btn-outline-success" formaction="{% url 'adminpanel:document_action' d.pk 'accept' %}">{% translate "Accept" %}</button>
+            <button class="btn btn-sm btn-outline-danger" formaction="{% url 'adminpanel:document_action' d.pk 'reject' %}">{% translate "Reject" %}</button></form>
+        </div>
+      {% empty %}<p class="small text-muted mb-0">{% translate "No documents uploaded." %}</p>{% endfor %}
+    </div>
+    <div class="box">
+      <h2 class="h6">{% translate "Properties" %}</h2>
+      {% for p in properties %}<div class="d-flex justify-content-between py-1 border-bottom"><a href="{% url 'adminpanel:property_detail' p.pk %}">{{ p.name }}</a>{{ p.status|status_badge:p.get_status_display }}</div>{% empty %}<p class="small text-muted mb-0">{% translate "No properties yet." %}</p>{% endfor %}
+    </div>
+  </div>
+  <div class="col-xl-5 d-grid gap-4 align-content-start">
+    <div class="box small">
+      <h2 class="h6">{% translate "Contact & payout" %}</h2>
+      <div><span class="text-muted">{% translate "Owner:" %}</span> {{ v.owner.display_name }} · {{ v.owner.email }} · {{ v.owner.phone }}</div>
+      <div><span class="text-muted">{% translate "Business:" %}</span> {{ v.email }} · {{ v.phone }}</div>
+      <div><span class="text-muted">{% translate "Payout:" %}</span> {{ v.payout_destination }}</div>
+      <div><span class="text-muted">{% translate "Wallet:" %}</span> <strong>{{ wallet.balance|money }}</strong> · {{ bookings }} {% translate "bookings" %}</div>
+      {% if members %}<div class="mt-2"><span class="text-muted">{% translate "Staff:" %}</span> {% for m in members %}{{ m.user.email }} ({{ m.get_role_display }}){% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+    </div>
+    <div class="box">
+      <h2 class="h6">{% translate "Commission override" %}</h2>
+      <p class="small text-muted">{% translate "Takes precedence over category and platform rates for new bookings." %}</p>
+      <form method="post" novalidate>{% csrf_token %}{% include "partials/form_fields.html" with cols="col-12" %}<button class="btn btn-primary mt-3" type="submit">{% translate "Save" %}</button></form>
+    </div>
+  </div>
+</div>
+{% endblock %}

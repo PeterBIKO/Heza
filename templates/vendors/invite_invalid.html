@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+<div class="container py-5 text-center" style="max-width:560px">
+  <i class="bi bi-envelope-x fs-1 text-gold"></i>
+  <h1 class="h3 mt-2">{% translate "This invitation can't be used" %}</h1>
+  <p class="text-muted">{% if invite.accepted_at %}{% translate "It has already been accepted." %}{% elif invite.revoked %}{% translate "It was revoked by the business." %}{% else %}{% translate "It has expired. Ask the business owner to resend it." %}{% endif %}</p>
+  <a class="btn btn-primary" href="{% url 'vendors:login' %}">{% translate "Partner sign in" %}</a>
+</div>
+{% endblock %}

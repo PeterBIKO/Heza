@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Terms of service" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5 prose" style="max-width:800px">
+  <h1 class="h2">{% translate "Terms of service" %}</h1>
+  <p class="text-muted small">{% translate "Template terms for launch review by Heza's legal counsel." %}</p>
+  <h2 class="h5 mt-4">1. {% translate "Who we are" %}</h2>
+  <p>{% translate "Heza operates an online marketplace through which independent accommodation and venue providers (“Partners”) offer bookings to guests. The contract for each stay or event is between the guest and the Partner." %}</p>
+  <h2 class="h5 mt-4">2. {% translate "Bookings and payment" %}</h2>
+  <p>{% translate "Prices are shown in Rwandan francs and include or add VAT as displayed. A booking is confirmed only after the payment provider confirms payment of the required amount, or after the Partner approves a pay-at-property request." %}</p>
+  <h2 class="h5 mt-4">3. {% translate "Cancellations" %}</h2>
+  <p>{% translate "The Partner's cancellation policy shown at booking applies. Refunds are returned to the original payment method." %}</p>
+  <h2 class="h5 mt-4">4. {% translate "Reviews" %}</h2>
+  <p>{% translate "Reviews must reflect a genuine, completed stay or event and may be moderated or removed if they breach our content guidelines." %}</p>
+  <h2 class="h5 mt-4">5. {% translate "Partners" %}</h2>
+  <p>{% translate "Partners warrant that their listings are accurate, that they hold the licences required by Rwandan law, and that they honour confirmed bookings. Heza deducts the agreed commission from each payment." %}</p>
+</div>
+{% endblock %}

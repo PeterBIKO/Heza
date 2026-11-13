@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{% translate "Compare" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% translate "Compare places" %}</h1>
+    {% if rows %}<form method="post" action="{% url 'public:compare_clear' %}">{% csrf_token %}<button class="btn btn-light btn-sm" type="submit">{% translate "Clear all" %}</button></form>{% endif %}
+  </div>
+  {% if rows %}
+  <div class="table-responsive box p-0">
+    <table class="table compare-table align-top">
+      <thead><tr><th></th>{% for r in rows %}<th>{{ r.p.name }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        <tr><th scope="row">{% translate "Photo" %}</th>{% for r in rows %}<td>{% with c=r.p.cover %}{% if c %}<img src="{{ c.image.url }}" alt="" class="rounded-3 object-cover" width="200" height="140">{% endif %}{% endwith %}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Type" %}</th>{% for r in rows %}<td>{{ r.p.get_category_display }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Location" %}</th>{% for r in rows %}<td>{{ r.p.district|default:"" }} {{ r.p.city }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "From" %}</th>{% for r in rows %}<td class="fw-semibold">{{ r.p.starting_price|money }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Guest rating" %}</th>{% for r in rows %}<td>{% if r.p.review_count %}{{ r.p.rating_avg|stars }} {{ r.p.rating_avg|floatformat:1 }} ({{ r.p.review_count }}){% else %}—{% endif %}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Stars" %}</th>{% for r in rows %}<td>{% if r.p.star_rating %}{{ r.p.star_rating }}★{% else %}—{% endif %}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Room types" %}</th>{% for r in rows %}<td>{{ r.room_count|default:"—" }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Max guests / room" %}</th>{% for r in rows %}<td>{{ r.max_guests|default:"—" }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Event capacity" %}</th>{% for r in rows %}<td>{{ r.max_capacity|default:"—" }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Cancellation" %}</th>{% for r in rows %}<td class="small">{{ r.p.get_cancellation_policy_display }}</td>{% endfor %}</tr>
+        <tr><th scope="row">{% translate "Deposit" %}</th>{% for r in rows %}<td>{% if r.p.payment_mode == 'deposit' %}{{ r.p.deposit_percent|floatformat:0 }}%{% else %}{% translate "Full payment" %}{% endif %}</td>{% endfor %}</tr>
+        {% for a in all_amenities %}
+        <tr><th scope="row" class="fw-normal"><i class="bi bi-{{ a.icon }} me-1"></i>{{ a.name }}</th>{% for r in rows %}<td>{% if a.pk in r.amenity_ids %}<i class="bi bi-check-lg text-success" aria-label="yes"></i>{% else %}<i class="bi bi-dash text-muted" aria-label="no"></i>{% endif %}</td>{% endfor %}</tr>
+        {% endfor %}
+        <tr><th></th>{% for r in rows %}<td><a class="btn btn-primary btn-sm" href="{{ r.p.get_absolute_url }}">{% translate "View" %}</a>
+          <form class="d-inline" method="post" action="{% url 'public:compare_toggle' r.p.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'public:compare' %}"><button class="btn btn-link btn-sm" type="submit">{% translate "Remove" %}</button></form></td>{% endfor %}</tr>
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Add up to 4 places with the Compare button on any listing to see them side by side." as t %}
+    {% url 'public:search' as surl %}{% translate "Browse places" as al %}
+    {% include "partials/empty.html" with icon="layout-split" text=t action_url=surl action_label=al %}
+  {% endif %}
+</div>
+{% endblock %}

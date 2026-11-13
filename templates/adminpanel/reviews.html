@@ -1,0 +1,32 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Reviews" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Review moderation" %}</h1>
+<ul class="nav nav-pills small mb-3">
+  <li class="nav-item"><a class="nav-link {% if status == 'pending' %}active{% endif %}" href="?status=pending">{% translate "Pending" %}</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'approved' %}active{% endif %}" href="?status=approved">{% translate "Published" %}</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'rejected' %}active{% endif %}" href="?status=rejected">{% translate "Rejected" %}</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'all' %}active{% endif %}" href="?status=all">{% translate "All" %}</a></li>
+</ul>
+<div class="d-grid gap-3">
+  {% for r in page.object_list %}
+  <div class="box">
+    <div class="d-flex flex-wrap justify-content-between gap-2">
+      <div><span class="text-gold">{{ r.rating|stars }}</span> <strong>{{ r.title }}</strong> {{ r.status|status_badge:r.get_status_display }}
+        <div class="small text-muted">{{ r.author.email }} · {{ r.property.name }} · {% translate "booking" %} <a href="{% url 'adminpanel:booking_detail' r.booking.reference %}">{{ r.booking.reference }}</a> · {{ r.created_at|date:"d M Y" }}</div></div>
+    </div>
+    <p class="my-2">{{ r.body|linebreaksbr }}</p>
+    {% if r.moderation_note %}<p class="small text-muted">{% translate "Note:" %} {{ r.moderation_note }}</p>{% endif %}
+    <form method="post" class="d-flex flex-wrap gap-2">{% csrf_token %}<input type="hidden" name="return_status" value="{{ status }}">
+      <input class="form-control form-control-sm" name="note" maxlength="255" placeholder="{% translate 'Moderation note (internal)' %}" style="max-width:280px">
+      {% if r.status != 'approved' %}<button class="btn btn-sm btn-success" formaction="{% url 'adminpanel:review_action' r.pk 'approve' %}">{% translate "Publish" %}</button>{% endif %}
+      {% if r.status != 'rejected' %}<button class="btn btn-sm btn-outline-danger" formaction="{% url 'adminpanel:review_action' r.pk 'reject' %}">{% translate "Reject" %}</button>{% endif %}
+    </form>
+  </div>
+  {% empty %}
+  <div class="box">{% translate "No reviews in this queue." as t %}{% include "partials/empty.html" with icon="star" text=t %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

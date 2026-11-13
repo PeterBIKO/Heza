@@ -1,0 +1,17 @@
+{% extends layout|default:"dashboard/base.html" %}
+{% load i18n %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block dash %}
+<div style="max-width:920px">
+  <a class="small" href="{{ back }}"><i class="bi bi-arrow-left"></i> {% translate "Back" %}</a>
+  <h1 class="h4 mt-2 mb-1">{{ title }}</h1>
+  {% if subtitle %}<p class="text-muted">{{ subtitle }}</p>{% endif %}
+  <form class="box mt-3" method="post" novalidate {% if multipart %}enctype="multipart/form-data"{% endif %}>{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="d-flex gap-2 mt-4">
+      <button class="btn btn-primary" type="submit">{{ submit }}</button>
+      <a class="btn btn-light" href="{{ back }}">{% translate "Cancel" %}</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

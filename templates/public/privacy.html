@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Privacy policy" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5 prose" style="max-width:800px">
+  <h1 class="h2">{% translate "Privacy policy" %}</h1>
+  <p class="text-muted small">{% translate "Prepared with Rwanda's Law No 058/2021 on the protection of personal data and privacy in mind; to be reviewed before launch." %}</p>
+  <h2 class="h5 mt-4">{% translate "What we collect" %}</h2>
+  <p>{% translate "Your name, email, phone number and booking details; for partners, business and payout details and verification documents. Card and mobile-money credentials are handled by our payment provider and never stored by Heza." %}</p>
+  <h2 class="h5 mt-4">{% translate "Why" %}</h2>
+  <p>{% translate "To process bookings and payments, send booking messages, prevent fraud, and meet tax and accounting obligations." %}</p>
+  <h2 class="h5 mt-4">{% translate "Who we share it with" %}</h2>
+  <p>{% translate "The property you book, our payment providers, and messaging providers (email, SMS) acting on our instructions." %}</p>
+  <h2 class="h5 mt-4">{% translate "Your rights" %}</h2>
+  <p>{% translate "You can access, correct or ask us to delete your data by emailing" %} <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Write a review" %} · {{ b.property.name }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:720px">
+  <a class="small" href="{{ b.get_absolute_url }}"><i class="bi bi-arrow-left"></i> {{ b.reference }}</a>
+  <h1 class="h3 mt-2">{% blocktranslate with p=b.property.name %}How was {{ p }}?{% endblocktranslate %}</h1>
+  <p class="text-muted">{% translate "Your review is linked to a verified booking and published after moderation." %}</p>
+  <form class="box" method="post" novalidate>{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="mb-3"><div class="form-label">{% translate "Overall rating" %} <span class="text-danger">*</span></div>
+      <div class="d-flex flex-wrap gap-3">{% for radio in form.rating %}<div class="form-check">{{ radio.tag }}<label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label></div>{% endfor %}</div>
+      {% for e in form.rating.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="row g-3 mb-3">
+      {% for f in form %}{% if f.name in "cleanliness service location value" %}<div class="col-6 col-md-3"><label class="form-label small" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}</div>{% endif %}{% endfor %}
+    </div>
+    <div class="mb-3"><label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>{{ form.title }}{% for e in form.title.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+    <div class="mb-3"><label class="form-label" for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>{{ form.body }}{% for e in form.body.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+    <button class="btn btn-primary" type="submit">{% translate "Submit review" %}</button>
+  </form>
+</div>
+{% endblock %}

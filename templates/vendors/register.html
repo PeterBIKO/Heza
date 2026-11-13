@@ -1,0 +1,16 @@
+{% extends "accounts/_auth_layout.html" %}
+{% load static i18n %}
+{% block title %}{% translate "Become a Heza partner" %}{% endblock %}
+{% block art %}{% static 'img/partner.jpg' %}{% endblock %}
+{% block art_quote %}{% translate "“Our weekend weddings are booked six months out — deposits land on MoMo the same day.”" %}{% endblock %}
+{% block art_caption %}{% translate "Partner · Garden venue, Kigali" %}{% endblock %}
+{% block auth %}
+<p class="small-caps mb-1">{% translate "Partners" %}</p>
+<h1 class="h3 mb-1">{% translate "Register your business" %}</h1>
+<p class="text-muted mb-4">{% translate "Create the owner account first. You'll add documents, payout details and properties next." %}</p>
+<form method="post" novalidate>{% csrf_token %}
+  {% include "partials/form_fields.html" %}
+  <button class="btn btn-primary w-100 mt-4" type="submit">{% translate "Create partner account" %}</button>
+</form>
+<p class="small text-muted mt-4">{% translate "Already a partner?" %} <a href="{% url 'vendors:login' %}">{% translate "Sign in" %}</a> · {% translate "Joining a team? Use the link in your invitation email." %}</p>
+{% endblock %}

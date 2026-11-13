@@ -1,0 +1,93 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{{ b.reference }}{% endblock %}
+{% block dash %}
+<a class="small" href="{% url 'dashboard:bookings' %}"><i class="bi bi-arrow-left"></i> {% translate "Bookings" %}</a>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mt-2 mb-4">
+  <div><h1 class="h4 mb-1">{{ b.reference }} {{ b.status|status_badge:b.get_status_display }} {{ b.payment_status|status_badge:b.get_payment_status_display }}</h1><div class="text-muted">{{ b.property.name }} · {{ b.listing_name }}</div></div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if b.status == 'confirmed' and not b.checked_in_at %}<form method="post" action="{% url 'dashboard:booking_action' b.reference 'check_in' %}">{% csrf_token %}<button class="btn btn-primary"><i class="bi bi-door-open me-1"></i>{% translate "Check in" %}</button></form>{% endif %}
+    {% if b.status == 'confirmed' %}<form method="post" action="{% url 'dashboard:booking_action' b.reference 'complete' %}" data-confirm="{% translate 'Mark this stay/event as completed? The guest will be invited to review.' %}">{% csrf_token %}<button class="btn btn-outline-primary"><i class="bi bi-check2-all me-1"></i>{% translate "Mark completed" %}</button></form>{% endif %}
+  </div>
+</div>
+
+{% if b.status == 'pending' and b.pay_later_requested %}
+<div class="box border-warning mb-4">
+  <h2 class="h6"><i class="bi bi-hourglass-split text-warning me-1"></i>{% translate "Guest asked to pay at the property" %}</h2>
+  <p class="small text-muted">{% translate "Approving confirms the booking now and blocks the dates. Collect the payment on arrival and record it below." %}</p>
+  <div class="d-flex flex-wrap gap-2">
+    <form method="post" action="{% url 'dashboard:booking_action' b.reference 'approve_pay_later' %}">{% csrf_token %}<button class="btn btn-success">{% translate "Approve & confirm" %}</button></form>
+    <form method="post" action="{% url 'dashboard:booking_action' b.reference 'decline_pay_later' %}" class="d-flex gap-2">{% csrf_token %}<input class="form-control" name="reason" maxlength="200" placeholder="{% translate 'Reason (optional)' %}"><button class="btn btn-outline-danger">{% translate "Decline" %}</button></form>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-xl-7 d-grid gap-4 align-content-start">
+    <div class="box">
+      <h2 class="h6">{% translate "Guest" %}</h2>
+      <div class="row g-3 small">
+        <div class="col-md-4"><div class="text-muted">{% translate "Name" %}</div><strong>{{ b.guest_name }}</strong></div>
+        <div class="col-md-4"><div class="text-muted">{% translate "Phone" %}</div><a href="tel:{{ b.guest_phone }}">{{ b.guest_phone }}</a></div>
+        <div class="col-md-4"><div class="text-muted">{% translate "Email" %}</div><a href="mailto:{{ b.guest_email }}">{{ b.guest_email }}</a></div>
+        {% if b.kind == 'room' %}
+          <div class="col-md-4"><div class="text-muted">{% translate "Stay" %}</div><strong>{{ b.check_in|date:"D d M" }} → {{ b.check_out|date:"D d M Y" }}</strong> ({{ b.nights }})</div>
+          <div class="col-md-4"><div class="text-muted">{% translate "Units" %}</div><strong>{{ b.rooms }} × {{ b.room_type.name }}</strong></div>
+          <div class="col-md-4"><div class="text-muted">{% translate "Guests" %}</div><strong>{{ b.adults }} + {{ b.children }}</strong></div>
+        {% else %}
+          <div class="col-md-4"><div class="text-muted">{% translate "Event" %}</div><strong>{{ b.start_at|date:"D d M Y" }}, {{ b.start_at|time:"H:i" }}–{{ b.end_at|time:"H:i" }}</strong></div>
+          <div class="col-md-4"><div class="text-muted">{% translate "Mode" %}</div><strong>{{ b.get_venue_mode_display }}</strong></div>
+          <div class="col-md-4"><div class="text-muted">{% translate "Guests" %}</div><strong>{{ b.guests }}</strong>{% if b.event_type %} · {{ b.event_type }}{% endif %}</div>
+          {% if b.package %}<div class="col-md-4"><div class="text-muted">{% translate "Package" %}</div><strong>{{ b.package.name }}</strong></div>{% endif %}
+          {% for x in b.extras.all %}{% if forloop.first %}<div class="col-12"><div class="text-muted">{% translate "Extras" %}</div>{% endif %}{{ x.quantity }} × {{ x.name }}{% if not forloop.last %}, {% else %}</div>{% endif %}{% endfor %}
+        {% endif %}
+        {% if b.special_requests %}<div class="col-12"><div class="text-muted">{% translate "Special requests" %}</div>{{ b.special_requests|linebreaksbr }}</div>{% endif %}
+        {% if b.checked_in_at %}<div class="col-12 text-success"><i class="bi bi-door-open"></i> {% translate "Checked in" %} {{ b.checked_in_at|date:"d M H:i" }}</div>{% endif %}
+        {% if b.cancel_reason %}<div class="col-12 text-danger">{% translate "Cancelled:" %} {{ b.cancel_reason }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="box">
+      <h2 class="h6">{% translate "Payments" %}</h2>
+      {% if payments %}
+      <div class="table-responsive"><table class="table table-sm small align-middle">
+        <thead><tr><th>{% translate "Reference" %}</th><th>{% translate "Channel" %}</th><th>{% translate "Status" %}</th><th class="money">{% translate "Amount" %}</th></tr></thead>
+        <tbody>{% for p in payments %}<tr><td>{{ p.reference }}<div class="text-muted">{{ p.created_at|date:"d M H:i" }}</div></td><td>{{ p.provider }}{% if p.payment_method %} · {{ p.payment_method }}{% endif %}{% if p.recorded_by %}<div class="text-muted">{% translate "by" %} {{ p.recorded_by.display_name }}</div>{% endif %}</td><td>{{ p.status|status_badge:p.get_status_display }}</td><td class="money">{{ p.amount|money:p.currency }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}<p class="small text-muted">{% translate "No payments yet." %}</p>{% endif %}
+      {% for r in refunds %}<div class="small"><i class="bi bi-arrow-return-left"></i> {% translate "Refund" %} {{ r.amount|money }} · {{ r.status|status_badge:r.get_status_display }} · {{ r.reason }}</div>{% endfor %}
+      {% if can_offline and b.balance_due and b.status != 'cancelled' and b.status != 'expired' and b.status != 'refunded' %}
+      <hr>
+      <h3 class="h6">{% translate "Record a payment received at the property" %}</h3>
+      <p class="small text-muted">{% translate "Cash, POS or MoMo paid directly to you. Heza's commission on it is deducted from your wallet." %}</p>
+      <form method="post" action="{% url 'dashboard:booking_action' b.reference 'offline_payment' %}" novalidate>{% csrf_token %}
+        {% include "partials/form_fields.html" with form=offline_form cols="col-md-4" %}
+        <button class="btn btn-outline-primary mt-3" type="submit">{% translate "Record payment" %}</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div class="box">
+      <h2 class="h6">{% translate "History" %}</h2>
+      <ul class="timeline small">{% for e in events %}<li><div>{{ e.message }}</div><div class="text-muted">{{ e.created_at|date:"d M Y, H:i" }}{% if e.actor %} · {{ e.actor.display_name }}{% endif %}</div></li>{% endfor %}</ul>
+    </div>
+  </div>
+  <div class="col-xl-5 d-grid gap-4 align-content-start">
+    <div class="box">
+      <h2 class="h6">{% translate "Price" %}</h2>
+      {% include "bookings/_breakdown.html" %}
+      <div class="quote-line small text-muted mt-2"><span>{% translate "Heza commission" %} ({{ b.commission_rate|floatformat:0 }}%)</span><span>{{ b.commission_amount|money }}</span></div>
+    </div>
+    {% if b.status == 'pending' or b.status == 'confirmed' %}
+    <div class="box">
+      <h2 class="h6 text-danger">{% translate "Cancel booking" %}</h2>
+      <p class="small text-muted">{% blocktranslate with a=preview.amount|money %}Cancelling as the property refunds the guest 100% of online payments ({{ a }}) after Heza approval.{% endblocktranslate %}</p>
+      <form method="post" action="{% url 'dashboard:booking_action' b.reference 'cancel' %}" data-confirm="{% translate 'Cancel this booking and notify the guest?' %}" novalidate>{% csrf_token %}
+        {% include "partials/form_fields.html" with form=cancel_form cols="col-12" %}
+        <button class="btn btn-outline-danger mt-3" type="submit">{% translate "Cancel booking" %}</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

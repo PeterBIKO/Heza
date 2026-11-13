@@ -1,0 +1,13 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n %}
+{% block page_title %}{% translate "Reports" %}{% endblock %}
+{% block dash %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">{% translate "Platform reports" %}{% if vendor %} · {{ vendor.business_name }}{% endif %}</h1>
+  <form method="get" class="d-flex gap-2" data-autosubmit>
+    <input type="hidden" name="start" value="{{ start|date:'Y-m-d' }}"><input type="hidden" name="end" value="{{ end|date:'Y-m-d' }}">
+    <select class="form-select form-select-sm" name="vendor" aria-label="{% translate 'Vendor' %}"><option value="">{% translate "All vendors" %}</option>{% for v in vendors %}<option value="{{ v.pk }}" {% if vendor.pk == v.pk %}selected{% endif %}>{{ v.business_name }}</option>{% endfor %}</select>
+  </form>
+</div>
+{% include "dashboard/_reports_body.html" with platform=True %}
+{% endblock %}

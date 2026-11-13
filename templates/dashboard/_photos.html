@@ -1,0 +1,24 @@
+{% load i18n %}
+<section class="box" id="photos">
+  <h2 class="h6">{% translate "Photos" %}</h2>
+  <p class="small text-muted">{% translate "JPG, PNG or WebP up to 8 MB each. The first photo is the cover." %}</p>
+  {% if images %}
+  <div class="thumb-grid mb-3">
+    {% for img in images %}
+      <div class="t">
+        <img src="{{ img.image.url }}" alt="{{ img.caption }}" loading="lazy">
+        {% if forloop.first %}<span class="badge text-bg-dark position-absolute top-0 start-0 m-2">{% translate "Cover" %}</span>{% endif %}
+        <div class="actions">
+          {% if not forloop.first %}<form method="post" action="{% url 'dashboard:image_action' kind img.pk %}">{% csrf_token %}<input type="hidden" name="action" value="cover"><input type="hidden" name="next" value="{{ request.path }}#photos"><button class="btn btn-sm btn-light" title="{% translate 'Make cover' %}" aria-label="{% translate 'Make cover' %}"><i class="bi bi-star"></i></button></form>{% endif %}
+          <form method="post" action="{% url 'dashboard:image_action' kind img.pk %}" data-confirm="{% translate 'Delete this photo?' %}">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="next" value="{{ request.path }}#photos"><button class="btn btn-sm btn-light text-danger" title="{% translate 'Delete' %}" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash"></i></button></form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <form method="post" action="{{ upload_url }}" enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-center">{% csrf_token %}
+    <input type="hidden" name="section" value="images">
+    {{ images_form.images }}
+    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-upload me-1"></i>{% translate "Upload photos" %}</button>
+  </form>
+</section>

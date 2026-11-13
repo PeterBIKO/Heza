@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{% translate "My bookings" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-3">{% include "accounts/_account_nav.html" with active="bookings" %}</div>
+    <div class="col-lg-9">
+      <h1 class="h3 mb-3">{% translate "My bookings" %}</h1>
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><a class="nav-link {% if tab == 'upcoming' %}active{% endif %}" href="?tab=upcoming">{% translate "Upcoming" %}</a></li>
+        <li class="nav-item"><a class="nav-link {% if tab == 'past' %}active{% endif %}" href="?tab=past">{% translate "Past" %}</a></li>
+        <li class="nav-item"><a class="nav-link {% if tab == 'cancelled' %}active{% endif %}" href="?tab=cancelled">{% translate "Cancelled" %}</a></li>
+      </ul>
+      <div class="d-grid gap-3">
+        {% for b in page.object_list %}
+          <a class="box d-flex gap-3 text-decoration-none text-reset" href="{{ b.get_absolute_url }}">
+            {% with c=b.property.cover %}{% if c %}<img src="{{ c.image.url }}" alt="" width="120" height="90" class="rounded-3 object-cover flex-shrink-0">{% endif %}{% endwith %}
+            <div class="min-w-0 flex-grow-1">
+              <div class="d-flex justify-content-between gap-2 flex-wrap"><strong>{{ b.property.name }}</strong><span>{{ b.status|status_badge:b.get_status_display }} {{ b.payment_status|status_badge:b.get_payment_status_display }}</span></div>
+              <div class="small text-muted">{{ b.listing_name }} · {{ b.reference }}</div>
+              <div class="small">{% if b.kind == 'room' %}{{ b.check_in|date:"D d M" }} → {{ b.check_out|date:"D d M Y" }} · {{ b.guests }} {% translate "guests" %}{% else %}{{ b.start_at|date:"D d M Y, H:i" }}–{{ b.end_at|time:"H:i" }} · {{ b.guests }} {% translate "guests" %}{% endif %}</div>
+              <div class="small fw-semibold mt-1">{{ b.total|money }}{% if b.balance_due %} · <span class="text-warning-emphasis">{% translate "balance" %} {{ b.balance_due|money }}</span>{% endif %}</div>
+            </div>
+          </a>
+        {% empty %}
+          <div class="box">{% translate "No bookings here yet." as t %}{% url 'public:search' as surl %}{% translate "Find a stay" as al %}{% include "partials/empty.html" with icon="suitcase2" text=t action_url=surl action_label=al %}</div>
+        {% endfor %}
+      </div>
+      {% include "partials/pagination.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

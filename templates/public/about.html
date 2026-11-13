@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}{% translate "About Heza" %}{% endblock %}
+{% block content %}
+<section class="py-5 bg-sand">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-6">
+        <p class="small-caps">{% translate "About" %}</p>
+        <h1 class="display-6">{% translate "Rwanda's home for verified stays and celebrations" %}</h1>
+        <p class="lead text-muted">{% translate "“Heza” means beautiful in Kinyarwanda. We connect travellers, families and event planners with hotels, lodges, resorts and venues we have checked ourselves." %}</p>
+      </div>
+      <div class="col-lg-6"><img src="{% static 'img/about.jpg' %}" class="img-fluid rounded-hz" alt="{% translate 'Lodge terrace overlooking the hills' %}"></div>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container prose" style="max-width:760px">
+    <h2 class="h4">{% translate "How we work" %}</h2>
+    <p>{% translate "Every partner submits their RDB registration, tax certificate and owner identification. Our team reviews the business and each property before it appears on Heza. Guests pay through regulated payment providers; we never see or store card numbers." %}</p>
+    <h2 class="h4">{% translate "For partners" %}</h2>
+    <p>{% translate "Partners manage rooms, prices, seasonal rates, event packages and calendars in one dashboard, invite their reception and management teams, and receive payouts to mobile money or bank accounts." %}</p>
+    <a class="btn btn-primary" href="{% url 'public:partners' %}">{% translate "List your property" %}</a>
+  </div>
+</section>
+{% endblock %}

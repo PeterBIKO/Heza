@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Profile" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-3">{% include "accounts/_account_nav.html" with active="profile" %}</div>
+    <div class="col-lg-9">
+      <h1 class="h3 mb-3">{% translate "Profile" %}</h1>
+      <div class="box mb-3 d-flex flex-wrap gap-3 align-items-center justify-content-between">
+        <div><div class="small text-muted">{% translate "Email" %}</div><strong>{{ user.email }}</strong>
+          {% if user.is_email_verified %}<span class="badge text-bg-success ms-1">{% translate "verified" %}</span>{% else %}<span class="badge text-bg-warning ms-1">{% translate "not verified" %}</span>{% endif %}</div>
+        {% if not user.is_email_verified %}<form method="post" action="{% url 'accounts:resend_verification' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary">{% translate "Send confirmation link" %}</button></form>{% endif %}
+        <div><div class="small text-muted">{% translate "Account type" %}</div><strong>{{ user.get_role_display }}</strong></div>
+      </div>
+      <form class="box" method="post" novalidate>{% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <button class="btn btn-primary mt-3" type="submit">{% translate "Save changes" %}</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

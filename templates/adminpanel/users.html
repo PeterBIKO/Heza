@@ -1,0 +1,31 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Users" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Users" %}</h1>
+<form class="box mb-3 d-flex flex-wrap gap-2 align-items-end" method="get">
+  <div class="flex-grow-1"><label class="form-label small" for="uq">{% translate "Search" %}</label><input class="form-control" id="uq" name="q" value="{{ request.GET.q }}" placeholder="{% translate 'Email, name or phone' %}"></div>
+  <div><label class="form-label small" for="ur">{% translate "Role" %}</label><select class="form-select" id="ur" name="role"><option value="">{% translate "All" %}</option>{% for v, l in roles %}<option value="{{ v }}" {% if request.GET.role == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="us" name="suspended" value="1" {% if request.GET.suspended %}checked{% endif %}><label class="form-check-label" for="us">{% translate "Suspended only" %}</label></div>
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+</form>
+<div class="box p-0">
+  <div class="table-responsive"><table class="table align-middle mb-0">
+    <thead><tr><th>{% translate "User" %}</th><th>{% translate "Role" %}</th><th>{% translate "Joined" %}</th><th>{% translate "Status" %}</th><th class="text-end">{% translate "Actions" %}</th></tr></thead>
+    <tbody>{% for u in page.object_list %}<tr>
+      <td><strong>{{ u.display_name }}</strong><div class="small text-muted">{{ u.email }}{% if u.phone %} · {{ u.phone }}{% endif %}</div></td>
+      <td>{{ u.get_role_display }}</td>
+      <td class="small">{{ u.date_joined|date:"d M Y" }}<div class="text-muted">{% translate "last login" %} {{ u.last_login|date:"d M"|default:"—" }}</div></td>
+      <td>{% if u.is_suspended %}<span class="badge text-bg-dark">{% translate "suspended" %}</span><div class="small text-muted">{{ u.suspended_reason }}</div>{% else %}<span class="badge text-bg-success">{% translate "active" %}</span>{% endif %}
+        {% if not u.is_email_verified %}<span class="badge text-bg-warning">{% translate "email unverified" %}</span>{% endif %}</td>
+      <td class="text-end">{% if u != user %}
+        <div class="d-inline-flex gap-1 flex-wrap justify-content-end">
+          {% if not u.is_email_verified %}<form method="post" action="{% url 'adminpanel:user_action' u.pk 'verify_email' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-sm btn-light">{% translate "Verify email" %}</button></form>{% endif %}
+          {% if u.is_suspended %}<form method="post" action="{% url 'adminpanel:user_action' u.pk 'reinstate' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-sm btn-outline-success">{% translate "Reinstate" %}</button></form>
+          {% else %}<form method="post" action="{% url 'adminpanel:user_action' u.pk 'suspend' %}" class="d-flex gap-1" data-confirm="{% translate 'Suspend this account and sign it out everywhere?' %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input class="form-control form-control-sm" name="note" placeholder="{% translate 'Reason' %}" required maxlength="255" style="width:140px"><button class="btn btn-sm btn-outline-danger">{% translate "Suspend" %}</button></form>{% endif %}
+        </div>{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

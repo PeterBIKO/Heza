@@ -1,0 +1,11 @@
+{% load i18n heza %}
+<div class="small">
+  {% for l in b.price_breakdown %}<div class="quote-line"><span>{{ l.label }}</span><span>{{ l.amount|money:b.currency }}</span></div>{% endfor %}
+  {% if b.discount_amount %}<div class="quote-line text-success"><span>{% translate "Promo" %} {{ b.coupon.code }}</span><span>− {{ b.discount_amount|money:b.currency }}</span></div>{% endif %}
+  <div class="quote-line text-muted"><span>{% translate "VAT" %} ({{ b.tax_rate|floatformat:0 }}%)</span><span>{{ b.tax_amount|money:b.currency }}</span></div>
+  <div class="quote-line quote-total"><span>{% translate "Total" %}</span><span>{{ b.total|money:b.currency }}</span></div>
+  {% if b.deposit_percent < 100 %}<div class="quote-line"><span>{% translate "Deposit" %} ({{ b.deposit_percent|floatformat:0 }}%)</span><span>{{ b.deposit_amount|money:b.currency }}</span></div>{% endif %}
+  <div class="quote-line"><span>{% translate "Paid" %}</span><span>{{ b.amount_paid|money:b.currency }}</span></div>
+  {% if b.amount_refunded %}<div class="quote-line text-info"><span>{% translate "Refunded" %}</span><span>{{ b.amount_refunded|money:b.currency }}</span></div>{% endif %}
+  <div class="quote-line fw-semibold"><span>{% translate "Balance due" %}</span><span>{{ b.balance_due|money:b.currency }}</span></div>
+</div>

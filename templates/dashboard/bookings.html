@@ -1,0 +1,34 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Bookings" %}{% endblock %}
+{% block dash %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">{% translate "Bookings" %}</h1>
+  {% if nav_vendor|can:"reports" %}<a class="btn btn-light btn-sm" href="{% qs export='csv' page='' %}"><i class="bi bi-download me-1"></i>{% translate "Export CSV (12 months)" %}</a>{% endif %}
+</div>
+<form class="box mb-3 row g-2 align-items-end" method="get">
+  <div class="col-md-4"><label class="form-label small" for="q">{% translate "Search" %}</label><input class="form-control" id="q" name="q" value="{{ request.GET.q }}" placeholder="{% translate 'Reference, guest name, email or phone' %}"></div>
+  <div class="col-6 col-md-2"><label class="form-label small" for="st">{% translate "Status" %}</label><select class="form-select" id="st" name="status"><option value="">{% translate "All" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-md-2"><label class="form-label small" for="wh">{% translate "When" %}</label><select class="form-select" id="wh" name="when"><option value="">{% translate "Any time" %}</option><option value="today" {% if request.GET.when == 'today' %}selected{% endif %}>{% translate "Arriving today" %}</option><option value="upcoming" {% if request.GET.when == 'upcoming' %}selected{% endif %}>{% translate "Upcoming" %}</option></select></div>
+  <div class="col-md-3"><label class="form-label small" for="pr">{% translate "Property" %}</label><select class="form-select" id="pr" name="property"><option value="">{% translate "All properties" %}</option>{% for p in properties %}<option value="{{ p.pk }}" {% if request.GET.property == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+  <div class="col-md-1"><button class="btn btn-primary w-100" type="submit" aria-label="{% translate 'Filter' %}"><i class="bi bi-funnel"></i></button></div>
+</form>
+<div class="box p-0">
+  {% if page.object_list %}
+  <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>{% translate "Reference" %}</th><th>{% translate "Guest" %}</th><th>{% translate "Listing" %}</th><th>{% translate "Dates" %}</th><th>{% translate "Status" %}</th><th class="money">{% translate "Total" %}</th></tr></thead>
+    <tbody>{% for b in page.object_list %}<tr>
+      <td><a class="fw-semibold" href="{% url 'dashboard:booking_detail' b.reference %}">{{ b.reference }}</a><div class="small text-muted">{{ b.created_at|date:"d M H:i" }}</div></td>
+      <td>{{ b.guest_name }}<div class="small text-muted">{{ b.guest_phone }}</div></td>
+      <td>{{ b.listing_name }}<div class="small text-muted">{{ b.property.name }}</div></td>
+      <td class="small">{% if b.kind == 'room' %}{{ b.check_in|date:"d M" }} → {{ b.check_out|date:"d M Y" }}<div class="text-muted">{{ b.nights }} {% translate "nights" %} · {{ b.rooms }} {% translate "units" %}</div>{% else %}{{ b.start_at|date:"d M Y" }}<div class="text-muted">{{ b.start_at|time:"H:i" }}–{{ b.end_at|time:"H:i" }} · {{ b.guests }} {% translate "guests" %}</div>{% endif %}</td>
+      <td>{{ b.status|status_badge:b.get_status_display }}<div>{{ b.payment_status|status_badge:b.get_payment_status_display }}</div>{% if b.pay_later_requested and b.status == 'pending' %}<div class="small text-warning-emphasis">{% translate "pay-later request" %}</div>{% endif %}</td>
+      <td class="money">{{ b.total|money }}{% if b.balance_due and b.status != 'cancelled' and b.status != 'expired' %}<div class="small text-muted">{% translate "due" %} {{ b.balance_due|money:"" }}</div>{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}
+    {% translate "No bookings match these filters." as t %}{% include "partials/empty.html" with icon="journal-x" text=t %}
+  {% endif %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

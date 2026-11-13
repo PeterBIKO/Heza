@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Calendar" %}{% endblock %}
+{% block dash %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">{% translate "Availability calendar" %}</h1>
+  <form method="get" class="d-flex gap-2 flex-wrap" data-autosubmit>
+    <input type="hidden" name="month" value="{{ month|date:'Y-m' }}">
+    <select class="form-select" name="item" aria-label="{% translate 'Room or space' %}">
+      {% if rooms %}<optgroup label="{% translate 'Rooms' %}">{% for r in rooms %}<option value="room-{{ r.pk }}" {% if kind == 'room' and selected.pk == r.pk %}selected{% endif %}>{{ r.property.name }} · {{ r.name }}</option>{% endfor %}</optgroup>{% endif %}
+      {% if venues %}<optgroup label="{% translate 'Event spaces' %}">{% for v in venues %}<option value="venue-{{ v.pk }}" {% if kind == 'venue' and selected.pk == v.pk %}selected{% endif %}>{{ v.property.name }} · {{ v.name }}</option>{% endfor %}</optgroup>{% endif %}
+    </select>
+    <noscript><button class="btn btn-light">{% translate "Show" %}</button></noscript>
+  </form>
+</div>
+{% if not selected %}
+  <div class="box">{% translate "Add a room type or event space to see its calendar." as t %}{% include "partials/empty.html" with icon="calendar3" text=t %}</div>
+{% else %}
+<div class="box">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-light btn-sm" href="?item={{ sel }}&month={{ prev }}" aria-label="{% translate 'Previous month' %}"><i class="bi bi-chevron-left"></i></a>
+    <div class="text-center"><h2 class="h5 mb-0">{{ month|date:"F Y" }}</h2><div class="small text-muted">{{ selected.property.name }} · {{ selected.name }}{% if kind == 'room' %} · {{ selected.quantity }} {% translate "units" %}{% endif %}</div></div>
+    <a class="btn btn-light btn-sm" href="?item={{ sel }}&month={{ next }}" aria-label="{% translate 'Next month' %}"><i class="bi bi-chevron-right"></i></a>
+  </div>
+  <div class="overflow-auto"><div class="cal-grid" style="min-width:680px">
+    <div class="head">{% translate "Mon" %}</div><div class="head">{% translate "Tue" %}</div><div class="head">{% translate "Wed" %}</div><div class="head">{% translate "Thu" %}</div><div class="head">{% translate "Fri" %}</div><div class="head">{% translate "Sat" %}</div><div class="head">{% translate "Sun" %}</div>
+    {% for week in weeks %}{% for d in week %}
+      <div class="cal-cell {% if not d.in_month %}out{% endif %} {% if d.past %}past{% endif %}">
+        <div class="num">{{ d.date.day }}</div>
+        {% if d.cell and d.in_month %}
+          {% if kind == 'room' %}
+            <span class="free {% if d.cell.free == 0 %}none{% elif d.cell.free < d.cell.total %}low{% else %}ok{% endif %}">{{ d.cell.free }}/{{ d.cell.total }} {% translate "free" %}</span>
+          {% else %}
+            {% if d.cell.blocked %}<span class="free none">{% translate "closed" %}</span>{% elif d.cell.bookings %}<span class="free low">{% translate "booked" %}</span>{% else %}<span class="free ok">{% translate "open" %}</span>{% endif %}
+          {% endif %}
+          {% for b in d.cell.bookings|slice:":3" %}<a class="bk" href="{% url 'dashboard:booking_detail' b.reference %}" title="{{ b.guest_name }} · {{ b.get_status_display }}">{% if b.status == 'pending' %}<i class="bi bi-hourglass-split text-warning"></i>{% else %}<i class="bi bi-dot text-success"></i>{% endif %}{{ b.guest_name }}</a>{% endfor %}
+          {% if d.cell.bookings|length > 3 %}<span class="small text-muted">+{{ d.cell.bookings|length|add:"-3" }}</span>{% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}{% endfor %}
+  </div></div>
+  <div class="d-flex flex-wrap gap-3 small text-muted mt-3">
+    <span><span class="free ok px-2 rounded-pill">●</span> {% translate "available" %}</span>
+    <span><i class="bi bi-hourglass-split text-warning"></i> {% translate "held, awaiting payment" %}</span>
+    {% if can_block %}<a class="ms-auto" href="{% if kind == 'room' %}{% url 'dashboard:room_edit' selected.pk %}{% else %}{% url 'dashboard:venue_edit' selected.pk %}{% endif %}#blocks"><i class="bi bi-slash-circle"></i> {% translate "Close dates" %}</a>{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

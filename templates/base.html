@@ -1,0 +1,28 @@
+{% load static i18n %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Heza — Hotels, lodges & event venues in Rwanda{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{% translate 'Book verified hotels, lodges, resorts, guesthouses, apartments and event venues across Rwanda. Secure payments in RWF with card or mobile money.' %}{% endblock %}">
+  <meta name="theme-color" content="#1f4d3f">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  {% block extra_css %}{% endblock %}
+  <link rel="stylesheet" href="{% static 'css/heza.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="visually-hidden-focusable position-absolute p-2 bg-white" href="#main">{% translate "Skip to content" %}</a>
+  {% block nav %}{% include "partials/nav.html" %}{% endblock %}
+  {% block messages %}{% include "partials/messages.html" %}{% endblock %}
+  <main id="main">{% block content %}{% endblock %}</main>
+  {% block footer %}{% include "partials/footer.html" %}{% endblock %}
+  <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block footer %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-art" style="background-image:url('{% block art %}{% static 'img/auth.jpg' %}{% endblock %}')">
+    <div class="quote">
+      <p class="display-font fs-3 mb-1">{% block art_quote %}{% translate "“Woke up to mist over the volcanoes and the best coffee of my life.”" %}{% endblock %}</p>
+      <p class="small text-white-50">{% block art_caption %}{% translate "Guest review · Musanze" %}{% endblock %}</p>
+    </div>
+  </div>
+  <div class="d-flex align-items-center">
+    <div class="auth-card">
+      {% include "partials/messages.html" %}
+      {% block auth %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{{ p.name }}{% endblock %}
+{% block dash %}
+<a class="small" href="{% url 'adminpanel:properties' %}"><i class="bi bi-arrow-left"></i> {% translate "Properties" %}</a>
+<div class="d-flex flex-wrap justify-content-between gap-2 mt-2 mb-4">
+  <div><h1 class="h4 mb-1">{{ p.name }} {{ p.status|status_badge:p.get_status_display }}</h1><div class="small text-muted">{{ p.get_category_display }} · {{ p.address }}, {{ p.city }} · <a href="{% url 'adminpanel:vendor_detail' p.vendor.pk %}">{{ p.vendor.business_name }}</a> {{ p.vendor.status|status_badge:p.vendor.get_status_display }}</div></div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-light" href="{{ p.get_absolute_url }}" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>{% translate "Preview" %}</a>
+    <form method="post" action="{% url 'adminpanel:property_action' p.pk 'feature' %}">{% csrf_token %}<button class="btn {% if p.is_featured %}btn-gold{% else %}btn-outline-secondary{% endif %}"><i class="bi bi-star me-1"></i>{% if p.is_featured %}{% translate "Featured" %}{% else %}{% translate "Feature on homepage" %}{% endif %}</button></form>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-7 d-grid gap-4 align-content-start">
+    <div class="box">
+      <h2 class="h6">{% translate "Verification" %}</h2>
+      <p class="small text-muted">{% translate "Check photos are real, address and map pin match, prices are plausible, and licences cover this property." %}</p>
+      <form method="post" class="d-grid gap-2">{% csrf_token %}
+        <textarea class="form-control" name="note" rows="2" maxlength="500" placeholder="{% translate 'Note to the vendor (required to reject or suspend)' %}"></textarea>
+        <div class="d-flex flex-wrap gap-2">
+          {% if p.status != 'verified' and p.status != 'suspended' %}<button class="btn btn-success" formaction="{% url 'adminpanel:property_action' p.pk 'verify' %}">{% translate "Verify & publish" %}</button>
+          <button class="btn btn-outline-danger" formaction="{% url 'adminpanel:property_action' p.pk 'reject' %}">{% translate "Request changes" %}</button>{% endif %}
+          {% if p.status == 'verified' %}<button class="btn btn-outline-danger" formaction="{% url 'adminpanel:property_action' p.pk 'suspend' %}">{% translate "Suspend listing" %}</button>{% endif %}
+          {% if p.status == 'suspended' %}<button class="btn btn-success" formaction="{% url 'adminpanel:property_action' p.pk 'reinstate' %}">{% translate "Reinstate" %}</button>{% endif %}
+        </div>
+      </form>
+      {% if p.review_note %}<p class="small mt-2 mb-0"><strong>{% translate "Last note:" %}</strong> {{ p.review_note }}</p>{% endif %}
+    </div>
+    <div class="box">
+      <h2 class="h6">{% translate "Photos" %} ({{ images|length }})</h2>
+      <div class="thumb-grid">{% for i in images %}<div class="t"><img src="{{ i.image.url }}" alt="" loading="lazy"></div>{% empty %}<p class="small text-muted">{% translate "No photos." %}</p>{% endfor %}</div>
+    </div>
+    <div class="box"><h2 class="h6">{% translate "Description" %}</h2><p class="small mb-0">{{ p.description|linebreaksbr }}</p></div>
+  </div>
+  <div class="col-xl-5 d-grid gap-4 align-content-start">
+    <div class="box small">
+      <h2 class="h6">{% translate "Facts" %}</h2>
+      <div>{% translate "Map" %}: {% if p.latitude %}{{ p.latitude }}, {{ p.longitude }}{% else %}<span class="text-danger">{% translate "not set" %}</span>{% endif %}</div>
+      <div>{% translate "Policy" %}: {{ p.get_cancellation_policy_display }}</div>
+      <div>{% translate "Payment" %}: {{ p.get_payment_mode_display }}{% if p.payment_mode == 'deposit' %} ({{ p.deposit_percent|floatformat:0 }}%){% endif %}{% if p.allow_pay_later %} · {% translate "pay-later allowed" %}{% endif %}</div>
+      <div>{% translate "Bookings" %}: {{ bookings }}</div>
+    </div>
+    <div class="box"><h2 class="h6">{% translate "Rooms" %}</h2>{% for r in rooms %}<div class="d-flex justify-content-between small py-1 border-bottom"><span>{{ r.name }} · {{ r.quantity }}×</span><span>{{ r.base_price|money }}</span></div>{% empty %}<p class="small text-muted mb-0">—</p>{% endfor %}</div>
+    <div class="box"><h2 class="h6">{% translate "Event spaces" %}</h2>{% for v in venues %}<div class="d-flex justify-content-between small py-1 border-bottom"><span>{{ v.name }} · {{ v.capacity_seated }} {% translate "seated" %}</span><span>{{ v.full_day_price|money }}</span></div>{% empty %}<p class="small text-muted mb-0">—</p>{% endfor %}</div>
+  </div>
+</div>
+{% endblock %}

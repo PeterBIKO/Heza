@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}{% translate "List your property on Heza" %}{% endblock %}
+{% block content %}
+<section class="py-5 text-white" style="background:linear-gradient(90deg,rgba(20,32,28,.92),rgba(20,32,28,.45)),url('{% static 'img/partner.jpg' %}') center/cover">
+  <div class="container py-5">
+    <p class="small-caps text-white-50">{% translate "Heza for partners" %}</p>
+    <h1 class="display-5" style="max-width:16ch">{% translate "Fill rooms and venues with guests who pay upfront" %}</h1>
+    <p class="lead text-white-50" style="max-width:52ch">{% translate "Hotels, lodges, resorts, guesthouses, apartments, wedding gardens, halls and conference centres across Rwanda." %}</p>
+    <div class="d-flex gap-2 flex-wrap mt-4">
+      <a class="btn btn-gold btn-lg" href="{% url 'vendors:register' %}">{% translate "Create a partner account" %}</a>
+      <a class="btn btn-outline-light btn-lg" href="{% url 'vendors:login' %}">{% translate "Partner sign in" %}</a>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-calendar-check fs-3 text-gold"></i><h2 class="h5 mt-2">{% translate "No double bookings" %}</h2><p class="small text-muted mb-0">{% translate "Real-time inventory per room type and venue slot, with blocks for maintenance or offline sales." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-cash-coin fs-3 text-gold"></i><h2 class="h5 mt-2">{% translate "Deposits & MoMo" %}</h2><p class="small text-muted mb-0">{% translate "Take full payment or a deposit, record cash at the desk, and withdraw to MoMo or bank." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-people fs-3 text-gold"></i><h2 class="h5 mt-2">{% translate "Your whole team" %}</h2><p class="small text-muted mb-0">{% translate "Invite property managers and receptionists with access limited to the properties they run." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-graph-up fs-3 text-gold"></i><h2 class="h5 mt-2">{% translate "Reports that matter" %}</h2><p class="small text-muted mb-0">{% translate "Occupancy, revenue, commission and cancellations, with CSV export for your accountant." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-balloon-heart fs-3 text-gold"></i><h2 class="h5 mt-2">{% translate "Built for events" %}</h2><p class="small text-muted mb-0">{% translate "Hourly, half-day, full-day and whole-event pricing with packages and extras." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-percent fs-3 text-gold"></i><h2 class="h5 mt-2">{% translate "Simple commission" %}</h2><p class="small text-muted mb-0">{% translate "Pay only on paid bookings. No listing fees." %}</p></div></div>
+    </div>
+    <h2 class="h4 mt-5">{% translate "How to get listed" %}</h2>
+    <ol class="mt-3">
+      <li>{% translate "Create a partner account and confirm your email." %}</li>
+      <li>{% translate "Add business, payout details and upload your RDB certificate and owner ID." %}</li>
+      <li>{% translate "Create your property with photos, rooms or venues, and prices." %}</li>
+      <li>{% translate "Submit — our team verifies your business and property, then you're live." %}</li>
+    </ol>
+  </div>
+</section>
+{% endblock %}

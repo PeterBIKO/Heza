@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Settings" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Business settings" %}</h1>
+<div class="d-grid gap-4" style="max-width:980px">
+  <section class="box">
+    <div class="d-flex flex-wrap justify-content-between gap-2"><div><div class="small text-muted">{% translate "Verification" %}</div>{{ vendor.status|status_badge:vendor.get_status_display }}</div>
+      <div><div class="small text-muted">{% translate "Commission" %}</div><strong>{% if vendor.commission_rate is not None %}{{ vendor.commission_rate|floatformat:1 }}% ({% translate "custom" %}){% else %}{% translate "Platform default or category rate" %}{% endif %}</strong></div>
+      <a class="btn btn-light btn-sm align-self-center" href="{% url 'vendors:onboarding' %}#documents">{% translate "Documents" %}</a></div>
+  </section>
+  <section class="box" id="profile">
+    <h2 class="h6">{% translate "Business profile" %}</h2>
+    <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}<input type="hidden" name="section" value="profile">
+      {% include "partials/form_fields.html" with form=profile %}
+      <button class="btn btn-primary mt-3" type="submit">{% translate "Save profile" %}</button>
+    </form>
+  </section>
+  <section class="box" id="payout">
+    <h2 class="h6">{% translate "Payout details" %}</h2>
+    <form method="post" novalidate>{% csrf_token %}<input type="hidden" name="section" value="payout">
+      {% include "partials/form_fields.html" with form=payout %}
+      <button class="btn btn-primary mt-3" type="submit">{% translate "Save payout details" %}</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

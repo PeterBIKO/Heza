@@ -1,0 +1,38 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Payouts" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Vendor payouts" %}</h1>
+<ul class="nav nav-pills small mb-3">
+  <li class="nav-item"><a class="nav-link {% if status == 'open' %}active{% endif %}" href="?status=open">{% translate "Open" %}</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'paid' %}active{% endif %}" href="?status=paid">{% translate "Paid" %}</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'rejected' %}active{% endif %}" href="?status=rejected">{% translate "Rejected" %}</a></li>
+  <li class="nav-item"><a class="nav-link {% if status == 'all' %}active{% endif %}" href="?status=all">{% translate "All" %}</a></li>
+</ul>
+<div class="d-grid gap-3">
+  {% for p in page.object_list %}
+  <div class="box d-flex flex-wrap justify-content-between gap-3">
+    <div>
+      <div><strong>{{ p.amount|money:p.currency }}</strong> {{ p.status|status_badge:p.get_status_display }}</div>
+      <div class="small"><a href="{% url 'adminpanel:vendor_detail' p.vendor.pk %}">{{ p.vendor.business_name }}</a> → {{ p.destination }}</div>
+      <div class="small text-muted">{% translate "requested" %} {{ p.created_at|date:"d M Y H:i" }}{% if p.transfer_reference %} · {% translate "ref" %} {{ p.transfer_reference }}{% endif %}{% if p.note %} · {{ p.note }}{% endif %}</div>
+    </div>
+    {% if p.status == 'requested' %}
+    <form method="post" class="d-flex flex-wrap gap-2 align-items-start">{% csrf_token %}
+      <input class="form-control form-control-sm" name="note" placeholder="{% translate 'Note (optional)' %}" style="width:170px">
+      <button class="btn btn-sm btn-success" formaction="{% url 'adminpanel:payout_action' p.pk 'approve' %}">{% translate "Approve" %}</button>
+      <button class="btn btn-sm btn-outline-danger" formaction="{% url 'adminpanel:payout_action' p.pk 'reject' %}">{% translate "Reject" %}</button>
+    </form>
+    {% elif p.status == 'approved' %}
+    <form method="post" action="{% url 'adminpanel:payout_action' p.pk 'paid' %}" class="d-flex gap-2 align-items-start">{% csrf_token %}
+      <input class="form-control form-control-sm" name="reference" placeholder="{% translate 'Transfer reference' %}" required style="width:190px">
+      <button class="btn btn-sm btn-primary">{% translate "Mark paid" %}</button>
+    </form>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="box">{% translate "No payouts here." as t %}{% include "partials/empty.html" with icon="bank" text=t %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

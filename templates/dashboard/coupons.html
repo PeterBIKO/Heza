@@ -1,0 +1,34 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Promo codes" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Promo codes" %}</h1>
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="box p-0">
+      {% if coupons %}
+      <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Discount" %}</th><th>{% translate "Valid" %}</th><th>{% translate "Used" %}</th><th></th></tr></thead>
+        <tbody>{% for c in coupons %}<tr>
+          <td><code class="fs-6">{{ c.code }}</code><div class="small text-muted">{{ c.description }}</div></td>
+          <td>{% if c.percent_off %}{{ c.percent_off|floatformat:0 }}%{% else %}{{ c.amount_off|money }}{% endif %}{% if c.min_subtotal %}<div class="small text-muted">{% translate "min" %} {{ c.min_subtotal|money:"" }}</div>{% endif %}</td>
+          <td class="small">{{ c.valid_from|date:"d M"|default:"—" }} → {{ c.valid_until|date:"d M Y"|default:"—" }}</td>
+          <td>{{ c.times_used }}{% if c.max_uses %}/{{ c.max_uses }}{% endif %}</td>
+          <td class="text-end"><form method="post" action="{% url 'dashboard:coupon_toggle' c.pk %}">{% csrf_token %}<button class="btn btn-sm {% if c.is_active %}btn-outline-secondary{% else %}btn-outline-success{% endif %}">{% if c.is_active %}{% translate "Pause" %}{% else %}{% translate "Activate" %}{% endif %}</button></form></td>
+        </tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}{% translate "No promo codes yet." as t %}{% include "partials/empty.html" with icon="ticket-perforated" text=t %}{% endif %}
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="box">
+      <h2 class="h6">{% translate "Create a code" %}</h2>
+      <p class="small text-muted">{% translate "Discounts you fund. They apply before VAT, to all your properties." %}</p>
+      <form method="post" novalidate>{% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <button class="btn btn-primary mt-3" type="submit">{% translate "Create code" %}</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

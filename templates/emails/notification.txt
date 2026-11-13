@@ -1,0 +1,8 @@
+{% autoescape off %}{{ greeting }}
+
+{% for line in lines %}{{ line }}
+{% endfor %}{% if cta_url %}
+{{ cta_label }}: {{ cta_url }}
+{% endif %}
+— The Heza team
+Need help? {{ SUPPORT_EMAIL|default:"support@heza.rw" }}{% endautoescape %}

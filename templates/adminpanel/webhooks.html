@@ -1,0 +1,21 @@
+{% extends "adminpanel/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Webhooks" %}{% endblock %}
+{% block dash %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">{% translate "Payment webhooks" %}</h1>
+  <div class="btn-group btn-group-sm"><a class="btn {% if not request.GET.invalid %}btn-primary{% else %}btn-light{% endif %}" href="?">{% translate "All" %}</a><a class="btn {% if request.GET.invalid %}btn-primary{% else %}btn-light{% endif %}" href="?invalid=1">{% translate "Invalid signature" %}</a></div>
+</div>
+<p class="small text-muted">{% translate "Every webhook is logged. A valid signature only triggers a server-side verification with the provider; the webhook body itself never marks a payment as paid." %}</p>
+<div class="box p-0">
+  <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead><tr><th>{% translate "Received" %}</th><th>{% translate "Provider" %}</th><th>{% translate "Event" %}</th><th>{% translate "Signature" %}</th><th>{% translate "Payment" %}</th><th>{% translate "Result" %}</th></tr></thead>
+    <tbody>{% for w in page.object_list %}<tr>
+      <td class="small text-nowrap">{{ w.received_at|date:"d M H:i:s" }}</td><td>{{ w.provider }}</td><td class="small"><code>{{ w.event_id|default:"—"|truncatechars:30 }}</code></td>
+      <td>{% if w.signature_valid %}<span class="badge text-bg-success">{% translate "valid" %}</span>{% else %}<span class="badge text-bg-danger">{% translate "invalid" %}</span>{% endif %}</td>
+      <td class="small">{{ w.payment.reference|default:"—" }}</td><td class="small">{{ w.result }}</td>
+    </tr>{% empty %}<tr><td colspan="6">{% translate "No webhooks received yet." as t %}{% include "partials/empty.html" with icon="broadcast" text=t %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

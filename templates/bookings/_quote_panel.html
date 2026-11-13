@@ -1,0 +1,15 @@
+{% load i18n %}
+<div class="box shadow-sm sticky-summary" data-quote-panel aria-live="polite">
+  <div class="d-flex gap-3 mb-3">
+    {% with c=p.cover %}{% if c %}<img src="{{ c.image.url }}" alt="" width="84" height="64" class="rounded-3 object-cover">{% endif %}{% endwith %}
+    <div class="min-w-0"><div class="fw-semibold">{{ title }}</div><div class="small text-muted">{{ p.name }} · {{ p.city }}</div></div>
+  </div>
+  <div data-quote-body><div class="skeleton mb-2"></div><div class="skeleton mb-2" style="width:70%"></div><div class="skeleton" style="width:50%"></div></div>
+  <div class="mt-2" data-quote-status></div>
+  <hr>
+  <ul class="list-unstyled small text-muted mb-0 d-grid gap-1">
+    <li><i class="bi bi-arrow-counterclockwise me-1"></i>{{ p.get_cancellation_policy_display }}</li>
+    <li><i class="bi bi-hourglass-split me-1"></i>{% translate "Dates are held for 30 minutes while you pay." %}</li>
+    <li><i class="bi bi-shield-lock me-1"></i>{% translate "Confirmed only after the payment provider verifies your payment." %}</li>
+  </ul>
+</div>

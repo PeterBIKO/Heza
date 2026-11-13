@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{% translate "Change booking" %} {{ b.reference }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:720px">
+  <a class="small" href="{{ b.get_absolute_url }}"><i class="bi bi-arrow-left"></i> {{ b.reference }}</a>
+  <h1 class="h3 mt-2">{% translate "Change your booking" %}</h1>
+  <p class="text-muted">{% translate "We'll check availability and re-price. If the new total is higher you'll pay the difference; if it's lower we refund it." %}</p>
+  <form class="box" method="post" novalidate {% if b.kind == 'room' %}data-date-pair{% endif %}>{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-primary" type="submit">{% translate "Update booking" %}</button>
+      <a class="btn btn-light" href="{{ b.get_absolute_url }}">{% translate "Back" %}</a>
+    </div>
+  </form>
+  <div class="box box-sand mt-3"><div class="small text-muted mb-1">{% translate "Current price" %}</div>{% include "bookings/_breakdown.html" %}</div>
+</div>
+{% endblock %}

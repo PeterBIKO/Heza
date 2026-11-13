@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /admin-panel/
+Disallow: /django-admin/
+Disallow: /accounts/
+Disallow: /bookings/
+Disallow: /payments/
+Disallow: /api/

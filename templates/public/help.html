@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Help centre" %} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:860px">
+  <h1 class="h2 mb-4">{% translate "Help centre" %}</h1>
+  <h2 class="h5 mt-4">{% translate "Guests" %}</h2>
+  <div class="accordion" id="faqGuests">
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#g1">{% translate "When is my booking confirmed?" %}</button></h3>
+      <div id="g1" class="accordion-collapse collapse show" data-bs-parent="#faqGuests"><div class="accordion-body">{% translate "As soon as our payment provider confirms your payment (or the deposit, where the property asks for one). We hold your dates for 30 minutes while you pay. If the property allows paying on arrival, it confirms your request directly." %}</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g2">{% translate "Which payment methods can I use?" %}</button></h3>
+      <div id="g2" class="accordion-collapse collapse" data-bs-parent="#faqGuests"><div class="accordion-body">{% translate "MTN Mobile Money, Airtel Money and Visa/Mastercard through our payment partner. Heza never sees or stores your card details." %}</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g3">{% translate "How do cancellations and refunds work?" %}</button></h3>
+      <div id="g3" class="accordion-collapse collapse" data-bs-parent="#faqGuests"><div class="accordion-body">{% translate "Each property shows its policy (flexible, moderate, strict or non-refundable). Before you cancel we show the exact refund. Refunds go back to the original payment method after a quick check by our team; if the property cancels you get 100% back." %}</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g4">{% translate "Can I change my dates?" %}</button></h3>
+      <div id="g4" class="accordion-collapse collapse" data-bs-parent="#faqGuests"><div class="accordion-body">{% translate "Yes, up to 24 hours before arrival when the property allows changes. We check availability and re-price; you pay any difference, or we refund it." %}</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g5">{% translate "Who can write reviews?" %}</button></h3>
+      <div id="g5" class="accordion-collapse collapse" data-bs-parent="#faqGuests"><div class="accordion-body">{% translate "Only guests whose stay or event was completed through Heza. Reviews are moderated before publication." %}</div></div></div>
+  </div>
+  <h2 class="h5 mt-5" id="partners">{% translate "Partners" %}</h2>
+  <div class="accordion" id="faqPartners">
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p1">{% translate "What documents do I need?" %}</button></h3>
+      <div id="p1" class="accordion-collapse collapse" data-bs-parent="#faqPartners"><div class="accordion-body">{% translate "Your RDB business registration certificate and the owner's national ID or passport are required. A TIN certificate and RDB tourism operating licence speed up approval." %}</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p2">{% translate "How much does Heza charge?" %}</button></h3>
+      <div id="p2" class="accordion-collapse collapse" data-bs-parent="#faqPartners"><div class="accordion-body">{% translate "A commission on each paid booking (10% by default). It is deducted automatically and shown on every line of your wallet ledger." %}</div></div></div>
+    <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#p3">{% translate "How do I get paid?" %}</button></h3>
+      <div id="p3" class="accordion-collapse collapse" data-bs-parent="#faqPartners"><div class="accordion-body">{% translate "Request a payout from your wallet to your MoMo number or bank account. Heza reviews payouts every business day." %}</div></div></div>
+  </div>
+  <div class="box box-sand mt-5"><strong>{% translate "Still need help?" %}</strong> {% translate "Email" %} <a href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.</div>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static i18n heza %}
+{% block nav %}{% with transparent_nav=True %}{% include "partials/nav.html" %}{% endwith %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block content %}
+<section class="hz-hero" style="background-image:url('{% static 'img/hero.jpg' %}')">
+  <div class="container">
+    {% include "partials/messages.html" %}
+    <p class="small-caps text-white-50 mb-2">{% translate "Rwanda · Verified stays & venues" %}</p>
+    <h1 class="mb-3">{% translate "Stay well. Celebrate beautifully." %}</h1>
+    <p class="lead mb-4">{% translate "Hand-checked hotels, lodges and event spaces — from Kigali's hills to the shores of Lake Kivu. Pay securely in RWF by card or mobile money." %}</p>
+    <div class="search-tabs d-flex gap-2 mb-3" data-search-tabs="heroSearch">
+      <button type="button" class="btn btn-sm active" data-type="stays"><i class="bi bi-moon-stars me-1"></i>{% translate "Stays" %}</button>
+      <button type="button" class="btn btn-sm" data-type="venues"><i class="bi bi-balloon-heart me-1"></i>{% translate "Events & meetings" %}</button>
+    </div>
+    <form id="heroSearch" class="search-panel" action="{% url 'public:search' %}" method="get" role="search">
+      <input type="hidden" name="type" value="stays">
+      <div class="row g-2 align-items-end" data-date-pair>
+        <div class="col-12 col-lg-3">
+          <label for="q">{% translate "Destination" %}</label>
+          <input id="q" name="q" class="form-control" placeholder="{% translate 'Kigali, Musanze, Rubavu…' %}" list="destList" autocomplete="off">
+          <datalist id="destList">{% for d in destinations %}<option value="{{ d.city }}">{% endfor %}</datalist>
+        </div>
+        <div class="col-6 col-lg-2">
+          <label for="ci" data-stay-label="{% translate 'Check-in' %}" data-venue-label="{% translate 'Event date' %}">{% translate "Check-in" %}</label>
+          <input id="ci" type="date" name="check_in" class="form-control" min="{{ today|date:'Y-m-d' }}">
+        </div>
+        <div class="col-6 col-lg-2">
+          <label for="co" data-stay-label="{% translate 'Check-out' %}" data-venue-label="{% translate 'Ends' %}">{% translate "Check-out" %}</label>
+          <input id="co" type="date" name="check_out" class="form-control" min="{{ tomorrow|date:'Y-m-d' }}">
+        </div>
+        <div class="col-5 col-lg-2">
+          <label for="guests">{% translate "Guests" %}</label>
+          <input id="guests" type="number" name="guests" min="1" max="2000" value="2" class="form-control">
+        </div>
+        <div class="col-7 col-lg-2">
+          <label for="cat">{% translate "Type" %}</label>
+          <select id="cat" name="category" class="form-select">
+            <option value="">{% translate "Any" %}</option>
+            {% for value, label in PROPERTY_CATEGORIES %}
+              <option value="{{ value }}" data-group="{% if value in 'hotel lodge resort guesthouse apartment' %}stays{% else %}venues{% endif %}" {% if value not in 'hotel lodge resort guesthouse apartment' %}hidden{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-lg-1 d-grid">
+          <button class="btn btn-primary py-2" type="submit" aria-label="{% translate 'Search' %}"><i class="bi bi-search"></i><span class="d-lg-none ms-2">{% translate "Search" %}</span></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="category-rail" aria-label="{% translate 'Browse by type' %}">
+      {% for value, label in PROPERTY_CATEGORIES %}
+        <a class="category-chip" href="{% url 'public:search' %}?category={{ value }}">
+          <i class="bi bi-{% cycle 'building' 'tree' 'water' 'house-heart' 'buildings' 'balloon-heart' 'easel2' 'people' 'flower1' 'bank' %}"></i>
+          <span class="fw-semibold small">{{ label }}</span>
+          <small>{{ category_counts|get_item:value|default:0 }} {% translate "places" %}</small>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section pt-3">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div><p class="small-caps mb-1">{% translate "Featured stays" %}</p><h2 class="section-title mb-0">{% translate "Places guests love right now" %}</h2></div>
+      <a class="btn btn-outline-primary btn-sm d-none d-md-inline-block" href="{% url 'public:search' %}?type=stays">{% translate "See all stays" %}</a>
+    </div>
+    {% if featured %}
+      <div class="row g-4">
+        {% for p in featured %}<div class="col-sm-6 col-lg-3">{% include "partials/property_card.html" %}</div>{% endfor %}
+      </div>
+    {% else %}
+      {% translate "Our first verified stays are being reviewed. Check back soon." as t %}{% include "partials/empty.html" with icon="building" text=t %}
+    {% endif %}
+  </div>
+</section>
+
+<section class="section bg-sand">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-4">
+        <p class="small-caps mb-1">{% translate "Weddings · Conferences · Celebrations" %}</p>
+        <h2 class="section-title">{% translate "Venues for the moments that matter" %}</h2>
+        <p class="text-muted">{% translate "Garden ceremonies, lakeside receptions and fully equipped conference halls. See real-time slot availability, choose a package, add extras and lock your date with a deposit." %}</p>
+        <a class="btn btn-primary" href="{% url 'public:search' %}?type=venues">{% translate "Explore venues" %}</a>
+      </div>
+      <div class="col-lg-8">
+        <div class="row g-4">
+          {% for p in venues %}<div class="col-sm-6">{% include "partials/property_card.html" %}</div>{% empty %}
+            <div class="col-12">{% translate "Event venues are coming soon." as t %}{% include "partials/empty.html" with icon="balloon-heart" text=t %}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if destinations %}
+<section class="section">
+  <div class="container">
+    <p class="small-caps mb-1">{% translate "Destinations" %}</p>
+    <h2 class="section-title mb-4">{% translate "Where to next?" %}</h2>
+    <div class="row g-3">
+      {% for d in destinations %}
+        <div class="col-6 col-md-4 col-lg-2">
+          <a class="dest-card" href="{% url 'public:search' %}?q={{ d.city|urlencode }}">
+            {% with img=dest_images|get_item:d.city %}{% if img %}<img src="{{ img }}" alt="{{ d.city }}" loading="lazy">{% endif %}{% endwith %}
+            <span class="label"><span class="fw-semibold d-block">{{ d.city }}</span><small>{{ d.n }} {% translate "places" %}</small></span>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section pt-0">
+  <div class="container">
+    <div class="row g-4 text-center text-md-start">
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-patch-check fs-2 text-gold"></i><h3 class="h5 mt-2">{% translate "Every listing verified" %}</h3><p class="text-muted small mb-0">{% translate "We check business registration, tourism licences and the property itself before anything goes live." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-phone fs-2 text-gold"></i><h3 class="h5 mt-2">{% translate "Pay your way" %}</h3><p class="text-muted small mb-0">{% translate "MTN MoMo, Airtel Money or card — in full or with a deposit. Your booking is confirmed the moment the payment is verified." %}</p></div></div>
+      <div class="col-md-4"><div class="box h-100"><i class="bi bi-chat-heart fs-2 text-gold"></i><h3 class="h5 mt-2">{% translate "Real reviews only" %}</h3><p class="text-muted small mb-0">{% translate "Only guests who completed a stay or event can review, and every review is moderated." %}</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section pt-0">
+  <div class="container">
+    <div class="rounded-hz overflow-hidden position-relative text-white p-5" style="background:linear-gradient(90deg,rgba(20,32,28,.92),rgba(20,32,28,.55)),url('{% static 'img/partner.jpg' %}') center/cover">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <h2 class="section-title">{% translate "Own a hotel, lodge or venue?" %}</h2>
+          <p class="mb-0 text-white-50">{% translate "List with Heza to reach travellers and event planners, manage rooms and calendars, take deposits and get paid to MoMo or your bank." %}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end"><a class="btn btn-gold btn-lg" href="{% url 'public:partners' %}">{% translate "Become a partner" %}</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

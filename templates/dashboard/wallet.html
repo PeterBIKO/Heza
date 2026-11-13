@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% load i18n heza %}
+{% block page_title %}{% translate "Wallet & payouts" %}{% endblock %}
+{% block dash %}
+<h1 class="h4 mb-3">{% translate "Wallet & payouts" %}</h1>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Wallet balance" %}</div><div class="value">{{ wallet.balance|money:"" }}</div><div class="sub">{{ wallet.currency }}</div></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Reserved for payouts" %}</div><div class="value">{{ reserved|money:"" }}</div><div class="sub">{% translate "requested or approved" %}</div></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Available" %}</div><div class="value text-forest">{{ available|money:"" }}</div><div class="sub">{% translate "can be withdrawn" %}</div></div></div>
+  <div class="col-6 col-xl-3"><div class="kpi"><div class="label">{% translate "Lifetime income" %}</div><div class="value">{{ totals|get_item:"booking_income"|default:0|money:"" }}</div><div class="sub">{% translate "net of commission" %}</div></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-xl-4 d-grid gap-4 align-content-start">
+    <div class="box">
+      <h2 class="h6">{% translate "Request a payout" %}</h2>
+      {% if nav_vendor.vendor.payout_momo_number or nav_vendor.vendor.payout_account_number %}
+        <p class="small text-muted">{% translate "Paid to" %} <strong>{{ nav_vendor.vendor.payout_destination }}</strong>. <a href="{% url 'dashboard:settings' %}#payout">{% translate "Change" %}</a></p>
+        <form method="post" novalidate>{% csrf_token %}
+          {% include "partials/form_fields.html" with cols="col-12" %}
+          <button class="btn btn-primary w-100 mt-3" type="submit" {% if available <= 0 %}disabled{% endif %}>{% translate "Request payout" %}</button>
+        </form>
+      {% else %}
+        <div class="alert alert-warning small mb-0">{% translate "Add your MoMo or bank details first." %} <a href="{% url 'dashboard:settings' %}#payout">{% translate "Payout settings" %}</a></div>
+      {% endif %}
+    </div>
+    <div class="box">
+      <h2 class="h6">{% translate "Payout history" %}</h2>
+      {% for p in payouts %}
+        <div class="d-flex justify-content-between align-items-start border-bottom py-2 small"><div><strong>{{ p.amount|money }}</strong><div class="text-muted">{{ p.created_at|date:"d M Y" }}{% if p.transfer_reference %} · {{ p.transfer_reference }}{% endif %}</div>{% if p.note %}<div class="text-muted">{{ p.note }}</div>{% endif %}</div>{{ p.status|status_badge:p.get_status_display }}</div>
+      {% empty %}<p class="small text-muted mb-0">{% translate "No payouts yet." %}</p>{% endfor %}
+    </div>
+  </div>
+  <div class="col-xl-8">
+    <div class="box p-0">
+      <div class="p-3 pb-0"><h2 class="h6">{% translate "Ledger" %}</h2><p class="small text-muted mb-2">{% translate "Every credit and debit to your wallet. Online payments are credited net of Heza's commission once verified." %}</p></div>
+      {% if entries.object_list %}
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Description" %}</th><th class="money">{% translate "Amount" %}</th><th class="money">{% translate "Balance" %}</th></tr></thead>
+        <tbody>{% for e in entries.object_list %}<tr>
+          <td class="small text-nowrap">{{ e.created_at|date:"d M Y H:i" }}</td>
+          <td><div class="small">{{ e.description }}</div><div class="small text-muted">{{ e.get_entry_type_display }}{% if e.booking %} · <a href="{% url 'dashboard:booking_detail' e.booking.reference %}">{{ e.booking.reference }}</a>{% endif %}</div></td>
+          <td class="money {% if e.amount < 0 %}text-danger{% else %}text-success{% endif %}">{{ e.amount|money:"" }}</td>
+          <td class="money">{{ e.balance_after|money:"" }}</td>
+        </tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}{% translate "Your ledger is empty. It fills up as guests pay." as t %}{% include "partials/empty.html" with icon="wallet2" text=t %}{% endif %}
+    </div>
+    {% include "partials/pagination.html" with page=entries %}
+  </div>
+</div>
+{% endblock %}

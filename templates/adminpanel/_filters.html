@@ -1,0 +1,6 @@
+{% load i18n %}
+<form class="box mb-3 d-flex flex-wrap gap-2 align-items-end" method="get">
+  <div class="flex-grow-1" style="min-width:200px"><label class="form-label small" for="fq">{% translate "Search" %}</label><input class="form-control" id="fq" name="q" value="{{ request.GET.q }}" placeholder="{{ placeholder }}"></div>
+  {% if statuses %}<div><label class="form-label small" for="fs">{% translate "Status" %}</label><select class="form-select" id="fs" name="status"><option value="">{% translate "All" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>{% endif %}
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+</form>

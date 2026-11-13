@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static i18n heza %}
+{% block title %}{% if q %}{{ q }} · {% endif %}{% translate "Search stays & venues" %} · Heza{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block content %}
+<div class="bg-sand border-bottom">
+  <div class="container py-3">
+    <form class="row g-2 align-items-end" method="get" action="{% url 'public:search' %}" data-date-pair role="search">
+      {% if group %}<input type="hidden" name="type" value="{{ group }}">{% endif %}
+      {% for c in cats %}<input type="hidden" name="category" value="{{ c }}">{% endfor %}
+      <div class="col-12 col-md-4"><label class="form-label small" for="sq">{% translate "Destination or property" %}</label><input id="sq" class="form-control" name="q" value="{{ q }}" placeholder="{% translate 'Kigali, Musanze…' %}"></div>
+      <div class="col-6 col-md-2"><label class="form-label small" for="sci">{% translate "Check-in / date" %}</label><input id="sci" type="date" class="form-control" name="check_in" value="{{ check_in|date:'Y-m-d' }}"></div>
+      <div class="col-6 col-md-2"><label class="form-label small" for="sco">{% translate "Check-out" %}</label><input id="sco" type="date" class="form-control" name="check_out" value="{{ check_out|date:'Y-m-d' }}"></div>
+      <div class="col-6 col-md-2"><label class="form-label small" for="sg">{% translate "Guests" %}</label><input id="sg" type="number" min="1" class="form-control" name="guests" value="{{ guests }}"></div>
+      <div class="col-6 col-md-2 d-grid"><button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>{% translate "Search" %}</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="container py-4">
+  {% if date_error %}<div class="alert alert-warning">{{ date_error }}</div>{% endif %}
+  <div class="row g-4">
+    <aside class="col-lg-3">
+      <button class="btn btn-light w-100 d-lg-none mb-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#filters"><i class="bi bi-sliders me-1"></i>{% translate "Filters" %}</button>
+      <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="filters">
+        <div class="offcanvas-header"><h5 class="offcanvas-title">{% translate "Filters" %}</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filters"></button></div>
+        <div class="offcanvas-body d-block">
+          <form method="get" data-autosubmit>
+            <input type="hidden" name="q" value="{{ q }}">
+            {% if check_in %}<input type="hidden" name="check_in" value="{{ check_in|date:'Y-m-d' }}">{% endif %}
+            {% if check_out %}<input type="hidden" name="check_out" value="{{ check_out|date:'Y-m-d' }}">{% endif %}
+            <input type="hidden" name="guests" value="{{ guests }}">
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <div class="mb-4">
+              <div class="small-caps mb-2">{% translate "Stays" %}</div>
+              {% for value, label in lodging_categories %}
+                <div class="form-check"><input class="form-check-input" type="checkbox" name="category" value="{{ value }}" id="c-{{ value }}" {% if value in cats %}checked{% endif %}><label class="form-check-label" for="c-{{ value }}">{{ label }}</label></div>
+              {% endfor %}
+              <div class="small-caps mb-2 mt-3">{% translate "Venues" %}</div>
+              {% for value, label in venue_categories %}
+                <div class="form-check"><input class="form-check-input" type="checkbox" name="category" value="{{ value }}" id="c-{{ value }}" {% if value in cats %}checked{% endif %}><label class="form-check-label" for="c-{{ value }}">{{ label }}</label></div>
+              {% endfor %}
+            </div>
+            <div class="mb-4">
+              <div class="small-caps mb-2">{% translate "Price (RWF)" %}</div>
+              <div class="d-flex gap-2"><input class="form-control form-control-sm" type="number" name="min_price" min="0" step="1000" placeholder="{% translate 'Min' %}" value="{{ min_price }}"><input class="form-control form-control-sm" type="number" name="max_price" min="0" step="1000" placeholder="{% translate 'Max' %}" value="{{ max_price }}"></div>
+              <button class="btn btn-sm btn-outline-primary mt-2" type="submit">{% translate "Apply" %}</button>
+            </div>
+            <div class="mb-4">
+              <div class="small-caps mb-2">{% translate "Guest rating" %}</div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="rating" value="" id="r0" {% if not rating %}checked{% endif %}><label class="form-check-label" for="r0">{% translate "Any" %}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="rating" value="4.5" id="r45" {% if rating == '4.5' %}checked{% endif %}><label class="form-check-label" for="r45">4.5+ {% translate "Exceptional" %}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="rating" value="4" id="r4" {% if rating == '4' %}checked{% endif %}><label class="form-check-label" for="r4">4+ {% translate "Very good" %}</label></div>
+              <div class="form-check"><input class="form-check-input" type="radio" name="rating" value="3" id="r3" {% if rating == '3' %}checked{% endif %}><label class="form-check-label" for="r3">3+ {% translate "Good" %}</label></div>
+            </div>
+            <div class="mb-4">
+              <div class="small-caps mb-2">{% translate "Stars" %}</div>
+              {% for s in "54321" %}
+                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="stars" value="{{ s }}" id="s{{ s }}" {% if s|add:0 in stars %}checked{% endif %}><label class="form-check-label" for="s{{ s }}">{{ s }}★</label></div>
+              {% endfor %}
+            </div>
+            <div class="mb-4">
+              <div class="small-caps mb-2">{% translate "Amenities" %}</div>
+              {% for a in all_amenities %}
+                <div class="form-check"><input class="form-check-input" type="checkbox" name="amenity" value="{{ a.slug }}" id="a-{{ a.slug }}" {% if a.slug in amenities_selected %}checked{% endif %}><label class="form-check-label" for="a-{{ a.slug }}"><i class="bi bi-{{ a.icon }} me-1 text-muted"></i>{{ a.name }}</label></div>
+              {% endfor %}
+            </div>
+            <a class="btn btn-sm btn-link px-0" href="{% url 'public:search' %}">{% translate "Clear all filters" %}</a>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <div class="col-lg-9">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+          <h1 class="h4 mb-0">{% if q %}{% blocktranslate %}Stays & venues in “{{ q }}”{% endblocktranslate %}{% else %}{% translate "Stays & venues in Rwanda" %}{% endif %}</h1>
+          <div class="small text-muted">{% blocktranslate count n=total %}{{ n }} place{% plural %}{{ n }} places{% endblocktranslate %}{% if check_in and check_out %} · {% translate "available" %} {{ check_in|date:"d M" }} – {{ check_out|date:"d M" }}{% endif %}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <ul class="nav nav-pills small" role="tablist">
+            <li class="nav-item"><button class="nav-link active py-1" data-bs-toggle="tab" data-bs-target="#listView" type="button"><i class="bi bi-grid"></i> {% translate "List" %}</button></li>
+            <li class="nav-item"><button class="nav-link py-1" data-bs-toggle="tab" data-bs-target="#mapView" type="button"><i class="bi bi-map"></i> {% translate "Map" %}</button></li>
+          </ul>
+          <form method="get" data-autosubmit>
+            {% for key, values in request.GET.lists %}{% if key != 'sort' and key != 'page' %}{% for v in values %}<input type="hidden" name="{{ key }}" value="{{ v }}">{% endfor %}{% endif %}{% endfor %}
+            <select class="form-select form-select-sm" name="sort" aria-label="{% translate 'Sort' %}">
+              <option value="recommended" {% if sort == 'recommended' %}selected{% endif %}>{% translate "Recommended" %}</option>
+              <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>{% translate "Price: low to high" %}</option>
+              <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>{% translate "Price: high to low" %}</option>
+              <option value="rating" {% if sort == 'rating' %}selected{% endif %}>{% translate "Top rated" %}</option>
+              <option value="newest" {% if sort == 'newest' %}selected{% endif %}>{% translate "Newest" %}</option>
+            </select>
+          </form>
+        </div>
+      </div>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="listView">
+          {% if page.object_list %}
+            {% with query_dates=request.GET.urlencode %}
+            <div class="row g-4">
+              {% for p in page.object_list %}<div class="col-sm-6 col-xl-4">{% include "partials/property_card.html" %}</div>{% endfor %}
+            </div>
+            {% endwith %}
+            {% include "partials/pagination.html" %}
+          {% else %}
+            <div class="box text-center py-5">
+              <i class="bi bi-search fs-1 text-gold"></i>
+              <h2 class="h5 mt-2">{% translate "No matches for that search" %}</h2>
+              <p class="text-muted">{% translate "Try different dates, fewer filters, or a nearby city." %}</p>
+              <a class="btn btn-primary btn-sm" href="{% url 'public:search' %}">{% translate "See all places" %}</a>
+            </div>
+          {% endif %}
+        </div>
+        <div class="tab-pane fade" id="mapView">
+          <div class="map map-lg" data-map="mapPoints"></div>
+          {{ map_points|json_script:"mapPoints" }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script><script src="{% static 'js/maps.js' %}"></script>{% endblock %}

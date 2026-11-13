@@ -1,0 +1,5 @@
+<div class="empty-state">
+  <i class="bi bi-{{ icon|default:'inbox' }}"></i>
+  <p class="mb-3">{{ text }}</p>
+  {% if action_url %}<a class="btn btn-primary btn-sm" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+</div>

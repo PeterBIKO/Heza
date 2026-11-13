@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load i18n heza %}
+{% block title %}{{ b.reference }} · Heza{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <a class="small" href="{% url 'bookings:mine' %}"><i class="bi bi-arrow-left"></i> {% translate "My bookings" %}</a>
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mt-2 mb-4">
+    <div>
+      <div class="small text-muted">{% translate "Booking" %} <strong class="text-body">{{ b.reference }}</strong></div>
+      <h1 class="h3 mb-1">{{ b.property.name }}</h1>
+      <div class="text-muted">{{ b.listing_name }}</div>
+    </div>
+    <div class="text-end">{{ b.status|status_badge:b.get_status_display }} {{ b.payment_status|status_badge:b.get_payment_status_display }}</div>
+  </div>
+
+  {% if b.status == 'pending' and b.pay_later_requested %}
+    <div class="alert alert-info"><i class="bi bi-hourglass-split me-1"></i>{% translate "Waiting for the property to approve paying on arrival. You can still pay online now to confirm instantly." %}</div>
+  {% elif b.status == 'pending' and hold_seconds > 0 %}
+    <div class="hold-timer mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2" data-countdown="{{ hold_seconds }}">
+      <span><i class="bi bi-clock-history me-1"></i>{% translate "We're holding your dates. Pay within" %} <strong data-countdown-text></strong> {% translate "to confirm." %}</span>
+    </div>
+  {% elif b.status == 'expired' %}
+    <div class="alert alert-secondary">{% translate "This hold expired before payment, and the dates were released." %} <a href="{{ b.property.get_absolute_url }}">{% translate "Book again" %}</a></div>
+  {% elif b.status == 'confirmed' %}
+    <div class="alert alert-success"><i class="bi bi-check-circle me-1"></i>{% translate "Confirmed. Show this reference at the property:" %} <strong>{{ b.reference }}</strong></div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-lg-7 d-grid gap-4 align-content-start">
+      <div class="box">
+        <div class="row g-3 small">
+          {% if b.kind == 'room' %}
+            <div class="col-6"><div class="text-muted">{% translate "Check-in" %}</div><strong>{{ b.check_in|date:"D d M Y" }}</strong><div class="text-muted">{% translate "from" %} {{ b.property.check_in_time|time:"H:i" }}</div></div>
+            <div class="col-6"><div class="text-muted">{% translate "Check-out" %}</div><strong>{{ b.check_out|date:"D d M Y" }}</strong><div class="text-muted">{% translate "by" %} {{ b.property.check_out_time|time:"H:i" }}</div></div>
+            <div class="col-6"><div class="text-muted">{% translate "Rooms" %}</div><strong>{{ b.rooms }} × {{ b.room_type.name }}</strong></div>
+            <div class="col-6"><div class="text-muted">{% translate "Guests" %}</div><strong>{{ b.adults }} {% translate "adults" %}{% if b.children %}, {{ b.children }} {% translate "children" %}{% endif %}</strong></div>
+          {% else %}
+            <div class="col-6"><div class="text-muted">{% translate "Date" %}</div><strong>{{ b.start_at|date:"D d M Y" }}</strong></div>
+            <div class="col-6"><div class="text-muted">{% translate "Time" %}</div><strong>{{ b.start_at|time:"H:i" }}–{{ b.end_at|time:"H:i" }}</strong> <span class="text-muted">({{ b.get_venue_mode_display }})</span></div>
+            <div class="col-6"><div class="text-muted">{% translate "Guests" %}</div><strong>{{ b.guests }}</strong></div>
+            <div class="col-6"><div class="text-muted">{% translate "Package" %}</div><strong>{{ b.package.name|default:"—" }}</strong></div>
+            {% if b.event_type %}<div class="col-12"><div class="text-muted">{% translate "Event" %}</div><strong>{{ b.event_type }}</strong></div>{% endif %}
+          {% endif %}
+          <div class="col-12"><div class="text-muted">{% translate "Address" %}</div><strong>{{ b.property.address }}, {{ b.property.city }}</strong>{% if b.property.phone %} · <a href="tel:{{ b.property.phone }}">{{ b.property.phone }}</a>{% endif %}</div>
+          {% if b.special_requests %}<div class="col-12"><div class="text-muted">{% translate "Your requests" %}</div>{{ b.special_requests }}</div>{% endif %}
+        </div>
+      </div>
+
+      {% if options %}
+      <div class="box" id="pay">
+        <h2 class="h5">{% translate "Pay now" %}</h2>
+        {% if providers %}
+        <form method="post" action="{% url 'bookings:pay' b.reference %}">{% csrf_token %}
+          <div class="mb-3">
+            <div class="form-label">{% translate "Amount" %}</div>
+            {% for o in options %}
+              <div class="form-check border rounded-3 p-3 ps-5 mb-2"><input class="form-check-input" type="radio" name="option" id="opt-{{ o.key }}" value="{{ o.key }}" {% if forloop.first %}checked{% endif %}><label class="form-check-label w-100 d-flex justify-content-between" for="opt-{{ o.key }}"><span>{{ o.label }}</span><strong>{{ o.amount|money:b.currency }}</strong></label></div>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            <div class="form-label">{% translate "Method" %}</div>
+            {% for p in providers %}
+              <div class="form-check"><input class="form-check-input" type="radio" name="provider" id="prov-{{ p.code }}" value="{{ p.code }}" {% if forloop.first %}checked{% endif %}><label class="form-check-label" for="prov-{{ p.code }}">{{ p.label }}</label></div>
+            {% endfor %}
+          </div>
+          <button class="btn btn-primary btn-lg w-100" type="submit"><i class="bi bi-lock me-1"></i>{% translate "Continue to secure payment" %}</button>
+          <p class="small text-muted mt-2 mb-0">{% translate "You'll complete payment on the provider's secure page. Heza never sees your card or PIN." %}</p>
+        </form>
+        {% else %}
+          <div class="alert alert-warning mb-0">{% translate "Online payment is temporarily unavailable. Please try again shortly or contact the property." %}</div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if payments %}
+      <div class="box">
+        <h2 class="h6">{% translate "Payments" %}</h2>
+        <div class="table-responsive"><table class="table table-sm small">
+          <thead><tr><th>{% translate "Reference" %}</th><th>{% translate "Method" %}</th><th>{% translate "Status" %}</th><th class="money">{% translate "Amount" %}</th></tr></thead>
+          <tbody>{% for p in payments %}<tr><td>{{ p.reference }}<div class="text-muted">{{ p.created_at|date:"d M H:i" }}</div></td><td>{{ p.provider }}{% if p.payment_method %} · {{ p.payment_method }}{% endif %}</td><td>{{ p.status|status_badge:p.get_status_display }}{% if p.failure_reason %}<div class="text-muted">{{ p.failure_reason|truncatechars:50 }}</div>{% endif %}</td><td class="money">{{ p.amount|money:p.currency }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+        {% for r in refunds %}<div class="small mt-2"><i class="bi bi-arrow-return-left"></i> {% translate "Refund" %} {{ r.amount|money:r.currency }} — {{ r.status|status_badge:r.get_status_display }} <span class="text-muted">{{ r.reason }}</span></div>{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="box">
+        <h2 class="h6">{% translate "Timeline" %}</h2>
+        <ul class="timeline small">{% for e in events %}<li><div>{{ e.message }}</div><div class="text-muted">{{ e.created_at|date:"d M Y, H:i" }}</div></li>{% endfor %}</ul>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="box sticky-summary">
+        <h2 class="h6">{% translate "Price details" %}</h2>
+        {% include "bookings/_breakdown.html" %}
+        <hr>
+        <div class="small text-muted mb-3"><i class="bi bi-arrow-counterclockwise"></i> {{ b.get_cancellation_policy_display }}</div>
+        <div class="d-grid gap-2">
+          {% if can_modify %}<a class="btn btn-outline-primary" href="{% url 'bookings:modify' b.reference %}"><i class="bi bi-pencil me-1"></i>{% translate "Change dates or guests" %}</a>{% endif %}
+          {% if can_cancel %}<a class="btn btn-outline-danger" href="{% url 'bookings:cancel' b.reference %}"><i class="bi bi-x-circle me-1"></i>{% translate "Cancel booking" %}</a>{% endif %}
+          {% if can_review %}<a class="btn btn-gold" href="{% url 'bookings:review' b.reference %}"><i class="bi bi-star me-1"></i>{% translate "Write a review" %}</a>{% endif %}
+          {% if b.review %}<div class="small text-muted text-center">{% translate "Your review:" %} {{ b.review.get_status_display }}</div>{% endif %}
+          <a class="btn btn-light" href="{{ b.property.get_absolute_url }}#contact"><i class="bi bi-chat-dots me-1"></i>{% translate "Message the property" %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
