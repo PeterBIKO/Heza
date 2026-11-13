@@ -74,7 +74,7 @@ def payment_options(booking):
     minimum = booking.minimum_payment
     balance = booking.balance_due
     if booking.amount_paid == 0 and minimum < balance:
-        options.append({"key": "deposit", "label": _("Pay deposit (%(p)s%%)") % {"p": booking.deposit_percent.normalize()}, "amount": minimum})
+        options.append({"key": "deposit", "label": _("Pay deposit (%(p)s%%)") % {"p": f"{booking.deposit_percent.normalize():f}"}, "amount": minimum})
     options.append({"key": "full", "label": _("Pay full balance") if booking.amount_paid else _("Pay in full"), "amount": balance})
     return options
 

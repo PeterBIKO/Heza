@@ -22,7 +22,7 @@
       <h1 class="h2 mt-2 mb-1">{{ p.name }}</h1>
       <div class="text-muted small">
         <i class="bi bi-geo-alt"></i> {{ p.address }}, {{ p.city }}
-        {% if p.review_count %} · <span class="rating-chip"><i class="bi bi-star-fill"></i>{{ p.rating_avg|floatformat:1 }}</span> ({{ p.review_count }} {% translate "reviews" %}){% endif %}
+        {% if p.review_count %} · <span class="rating-chip"><i class="bi bi-star-fill"></i>{{ p.rating_avg|floatformat:1 }}</span> ({% blocktranslate count n=p.review_count %}{{ n }} review{% plural %}{{ n }} reviews{% endblocktranslate %}){% endif %}
         · <i class="bi bi-patch-check-fill text-forest"></i> {% translate "Verified by Heza" %}
       </div>
     </div>

@@ -165,7 +165,7 @@ def quote_venue(venue, mode, start_at, end_at, guests, package=None, extras=None
         raise ValueError(_("This venue does not offer that booking option."))
     hours = Decimal((end_at - start_at).total_seconds() / 3600)
     if mode == "hourly":
-        quote.add(f"{venue.name} · {hours.normalize()} h", base * hours, qty=float(hours), unit_price=base)
+        quote.add(f"{venue.name} · {hours.normalize():f} h", base * hours, qty=float(hours), unit_price=base)
     else:
         from .models import Booking
 

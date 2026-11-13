@@ -20,7 +20,7 @@
       return;
     }
     // Loading state: disable submit buttons and show a spinner, preventing double submits.
-    if (!form.hasAttribute("data-no-spinner") && form.method.toLowerCase() === "post") {
+    if (!form.hasAttribute("data-no-spinner") && (form.getAttribute("method") || "get").toLowerCase() === "post") {
       const btn = e.submitter || form.querySelector("[type=submit]");
       if (btn && !btn.disabled) {
         if (btn.name) {
@@ -43,6 +43,8 @@
     const form = e.target;
     const kind = form.getAttribute("data-toggle");
     if (!kind) return;
+    // Signed-out visitors take the plain POST, which redirects to sign-in and back.
+    if (kind === "favorite" && document.body.getAttribute("data-auth") !== "1") return;
     e.preventDefault();
     fetch(form.action, {
       method: "POST",

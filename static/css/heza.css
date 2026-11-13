@@ -209,7 +209,7 @@ a { text-underline-offset: 3px; }
 .table thead th { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--hz-muted); font-weight: 600; background: #fbfaf7; white-space: nowrap; }
 .money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .bar-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; }
-.bar-chart .bar { flex: 1; background: var(--hz-forest-050); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; }
+.bar-chart .bar { flex: 1; height: 100%; background: var(--hz-forest-050); border-radius: 4px 4px 0 0; position: relative; }
 .bar-chart .bar > span { position: absolute; bottom: 0; left: 0; right: 0; background: var(--hz-forest); border-radius: 4px 4px 0 0; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .cal-grid .head { font-size: .72rem; text-transform: uppercase; color: var(--hz-muted); font-weight: 600; text-align: center; }

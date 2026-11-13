@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.http import Http404, JsonResponse
@@ -241,7 +242,7 @@ def favorite_toggle(request, pk):
     if not request.user.is_authenticated:
         if _wants_json(request):
             return JsonResponse({"login_required": True}, status=401)
-        return redirect(f"/accounts/login/?next={request.POST.get('next', '/')}")
+        return redirect_to_login(request.POST.get("next") or "/")
     prop = get_object_or_404(Property.objects.public(), pk=pk)
     fav, created = Favorite.objects.get_or_create(user=request.user, property=prop)
     if not created:

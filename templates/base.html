@@ -15,7 +15,7 @@
   {% block extra_css %}{% endblock %}
   <link rel="stylesheet" href="{% static 'css/heza.css' %}">
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block body_class %}{% endblock %}" data-auth="{{ user.is_authenticated|yesno:'1,0' }}">
   <a class="visually-hidden-focusable position-absolute p-2 bg-white" href="#main">{% translate "Skip to content" %}</a>
   {% block nav %}{% include "partials/nav.html" %}{% endblock %}
   {% block messages %}{% include "partials/messages.html" %}{% endblock %}
